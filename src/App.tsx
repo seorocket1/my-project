@@ -3,8 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Sparkles, Zap, LogOut, User as UserIcon, History, Settings, CreditCard, AlertCircle, Brain, Cpu, Palette, Layers } from 'lucide-react';
 import { ImageTypeSelector } from './components/ImageTypeSelector';
-import { BlogImageForm } from './components/BlogImageForm';
-import { InfographicForm } from './components/InfographicForm';
+import { UnifiedImageForm } from './components/UnifiedImageForm';
 import { ImagePreview } from './components/ImagePreview';
 import { ProgressSteps } from './components/ProgressSteps';
 import { QuickNavigation } from './components/QuickNavigation';
@@ -200,21 +199,14 @@ export default function App() {
   const handleFormSubmit = async (data: any) => {
     if (!selectedType) return;
 
-    if (user && isSupabaseConfigured) {
-      let requiredCredits = 5; // Base cost for image generation
-      if (selectedType === 'blog' && data.image_url) {
-        requiredCredits += 5; // Additional 5 credits for custom image upload in blog
-      }
+    let requiredCredits = selectedType === 'infographic' ? 10 : 5;
+    if (selectedType === 'blog' && data.image_url) {
+      requiredCredits += 5;
+    }
 
+    if (user && isSupabaseConfigured) {
       if (user.credits < requiredCredits) {
-        setError(`Insufficient credits. You need ${requiredCredits} credits.`);
-        return;
-      }
-      try {
-        await deductCredits(user.id, requiredCredits);
-        await refreshUser();
-      } catch (error) {
-        setError('Failed to deduct credits. Please try again.');
+        setError(`Insufficient credits. You need ${requiredCredits} credits but have ${user.credits}.`);
         return;
       }
     }
@@ -281,6 +273,16 @@ export default function App() {
         return;
       }
 
+      if (user && isSupabaseConfigured) {
+        try {
+          await deductCredits(user.id, requiredCredits);
+        } catch (error) {
+          console.error('Failed to deduct credits:', error);
+          setError('Failed to deduct credits. Please contact support.');
+          return;
+        }
+      }
+
       const newImageRecord = await saveImageGeneration({
         user_id: user.id,
         image_type: selectedType,
@@ -288,7 +290,7 @@ export default function App() {
         content: content,
         style: style,
         colour: colour,
-        credits_used: selectedType === 'blog' && data.image_url ? 10 : 5, // Dynamic credit deduction
+        credits_used: requiredCredits,
         image_data: imageBase64,
       });
 
@@ -303,12 +305,10 @@ export default function App() {
       setShowSuccessNotification(true);
 
       if (user && isSupabaseConfigured) {
-        // Manually update history state for instant UI update
         if (newImageRecord) {
           const newHistoryItem = mapHistory([newImageRecord])[0];
           setHistory(prev => [newHistoryItem, ...prev]);
         }
-        // Refresh user to get updated credits, history will also be refreshed but local update is faster
         await refreshUser();
       }
     } catch (error) {
@@ -528,8 +528,17 @@ export default function App() {
                         </p>
                       </div>
                       <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
-                        {selectedType === 'blog' && <BlogImageForm onSubmit={handleFormSubmit} isLoading={isProcessing} disabled={isProcessing || isBulkProcessing} onOpenBulkModal={() => setShowBulkModal(true)} user={user} setShowAccountPanel={setShowAccountPanel} />}
-                        {selectedType === 'infographic' && <InfographicForm onSubmit={handleFormSubmit} isLoading={isProcessing} disabled={isProcessing || isBulkProcessing} onOpenBulkModal={() => setShowBulkModal(true)} user={user} setShowAccountPanel={setShowAccountPanel} />}
+                        {selectedType && (
+                          <UnifiedImageForm
+                            imageType={selectedType}
+                            onSubmit={handleFormSubmit}
+                            isLoading={isProcessing}
+                            disabled={isProcessing || isBulkProcessing}
+                            onOpenBulkModal={() => setShowBulkModal(true)}
+                            user={user}
+                            setShowAccountPanel={setShowAccountPanel}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

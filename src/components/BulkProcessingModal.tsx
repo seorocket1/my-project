@@ -28,16 +28,57 @@ interface BulkItem {
   title?: string;
   content: string;
   style?: string;
+  customStyle?: string;
   colour?: string;
+  customColour?: string;
   imageUrl?: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   imageData?: string;
   error?: string;
   useBrand?: boolean;
   dimensions?: string;
+  customDimensions?: string;
 }
 
 const WEBHOOK_URL = 'https://n8n.seoengine.agency/webhook/6e9e3b30-cb55-4d74-aa9d-68691983455f';
+
+const STYLE_OPTIONS = [
+  { value: '', label: 'Default' },
+  { value: 'very simple', label: 'Very Simple' },
+  { value: 'minimalist', label: 'Minimalist' },
+  { value: 'modern', label: 'Modern' },
+  { value: 'professional', label: 'Professional' },
+  { value: 'creative', label: 'Creative' },
+  { value: 'elegant', label: 'Elegant' },
+  { value: 'bold', label: 'Bold' },
+  { value: 'vintage', label: 'Vintage' },
+  { value: 'custom', label: 'Custom Style' },
+];
+
+const COLOUR_OPTIONS = [
+  { value: '', label: 'Default' },
+  { value: 'red', label: 'Red' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'green', label: 'Green' },
+  { value: 'purple', label: 'Purple' },
+  { value: 'orange', label: 'Orange' },
+  { value: 'yellow', label: 'Yellow' },
+  { value: 'pink', label: 'Pink' },
+  { value: 'teal', label: 'Teal' },
+  { value: 'black', label: 'Black' },
+  { value: 'white', label: 'White' },
+  { value: 'gray', label: 'Gray' },
+  { value: 'multicolor', label: 'Multicolor' },
+  { value: 'custom', label: 'Custom Color' },
+];
+
+const DIMENSION_OPTIONS = [
+  { value: 'auto', label: 'Auto' },
+  { value: '1280x855', label: 'Landscape (1280x855)' },
+  { value: '1920x1080', label: 'Full HD (1920x1080)' },
+  { value: '1080x1080', label: 'Square (1080x1080)' },
+  { value: 'custom', label: 'Custom Dimensions' },
+];
 
 export const BulkProcessingModal: React.FC<BulkProcessingModalProps> = ({
   isOpen,
@@ -101,11 +142,15 @@ export const BulkProcessingModal: React.FC<BulkProcessingModalProps> = ({
       setBulkItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'processing' } : i));
       setCurrentProcessingIndex(index);
 
+      const finalStyle = item.style === 'custom' ? item.customStyle?.trim() : item.style;
+      const finalColour = item.colour === 'custom' ? item.customColour?.trim() : item.colour;
+      const finalDimensions = item.dimensions === 'custom' ? item.customDimensions?.trim() : item.dimensions;
+
       const sanitizedData = sanitizeFormData({
         title: item.title,
         content: item.content,
-        style: item.style,
-        colour: item.colour,
+        style: finalStyle,
+        colour: finalColour,
       });
 
       let imageDetail = imageType === 'blog'
@@ -118,8 +163,13 @@ export const BulkProcessingModal: React.FC<BulkProcessingModalProps> = ({
         image_type: imageType === 'blog' ? (item.imageUrl ? 'Featured Image with product image' : 'Featured Image') : 'Infographic',
         image_detail: imageDetail,
         ...(item.imageUrl && { image_url: item.imageUrl }),
-        ...(item.useBrand && { use_brand: item.useBrand }),
-        ...(item.dimensions && { image_size: item.dimensions }),
+        ...(item.useBrand && user && {
+          use_brand: item.useBrand,
+          brand_logo: user.brand_logo_url,
+          brand_website: user.website_url,
+          brand_guidelines: user.brand_guidelines,
+        }),
+        ...(finalDimensions && finalDimensions !== 'auto' && { image_size: finalDimensions }),
       };
 
       const controller = new AbortController();
@@ -178,26 +228,48 @@ export const BulkProcessingModal: React.FC<BulkProcessingModalProps> = ({
     }
 
     if (user) {
-      const requiredCredits = bulkItems.length * getCreditCost(imageType);
-      if (user.credits < requiredCredits) {
-        alert(`Insufficient credits. You need ${requiredCredits} credits.`);
-        return;
-      }
-      try {
-        await deductCredits(user.id, requiredCredits);
-        await onRefreshUser();
-      } catch (error) {
-        alert('Failed to deduct credits. Please try again.');
+      let creditsPerItem = getCreditCost(imageType);
+      bulkItems.forEach(item => {
+        if (imageType === 'blog' && item.imageUrl) {
+          creditsPerItem += 5;
+        }
+      });
+      const estimatedCredits = bulkItems.length * creditsPerItem;
+      if (user.credits < estimatedCredits) {
+        alert(`Insufficient credits. You may need up to ${estimatedCredits} credits but have ${user.credits}.`);
         return;
       }
     }
 
     setIsProcessing(true);
     let successCount = 0;
+    let totalCreditsUsed = 0;
+
     for (let i = 0; i < bulkItems.length; i++) {
-      if (await processItem(bulkItems[i], i)) successCount++;
+      const item = bulkItems[i];
+      let itemCreditCost = getCreditCost(imageType);
+      if (imageType === 'blog' && item.imageUrl) {
+        itemCreditCost += 5;
+      }
+
+      if (await processItem(bulkItems[i], i)) {
+        if (user) {
+          try {
+            await deductCredits(user.id, itemCreditCost);
+            totalCreditsUsed += itemCreditCost;
+          } catch (error) {
+            console.error('Failed to deduct credits for item:', item.id);
+          }
+        }
+        successCount++;
+      }
       if (i < bulkItems.length - 1) await new Promise(resolve => setTimeout(resolve, 1000));
     }
+
+    if (user && totalCreditsUsed > 0) {
+      await onRefreshUser();
+    }
+
     setIsProcessing(false);
     onBulkCompleted(successCount, bulkItems.length);
   };
@@ -300,24 +372,64 @@ export const BulkProcessingModal: React.FC<BulkProcessingModalProps> = ({
                       onRemove={() => updateItem(item.id, 'imageUrl', '')}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Style</label>
-                      <CustomSelect label="" options={[{value: '', label: 'Default'}, {value: 'minimalist', label: 'Minimalist'}, {value: 'modern', label: 'Modern'}]} value={item.style || ''} onChange={(v) => updateItem(item.id, 'style', v)} disabled={isProcessing} />
+                      <CustomSelect label="" options={STYLE_OPTIONS} value={item.style || ''} onChange={(v) => updateItem(item.id, 'style', v)} disabled={isProcessing} />
+                      {item.style === 'custom' && (
+                        <input
+                          type="text"
+                          value={item.customStyle || ''}
+                          onChange={(e) => updateItem(item.id, 'customStyle', e.target.value)}
+                          disabled={isProcessing}
+                          className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., futuristic tech..."
+                          maxLength={50}
+                        />
+                      )}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Colour</label>
-                      <CustomSelect label="" options={[{value: '', label: 'Default'}, {value: 'blue', label: 'Blue'}, {value: 'green', label: 'Green'}]} value={item.colour || ''} onChange={(v) => updateItem(item.id, 'colour', v)} disabled={isProcessing} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Branding</label>
-                      <BrandingToggle user={user} useBrand={item.useBrand || false} setUseBrand={(v) => updateItem(item.id, 'useBrand', v)} setShowAccountPanel={setShowAccountPanel} />
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Color</label>
+                      <CustomSelect label="" options={COLOUR_OPTIONS} value={item.colour || ''} onChange={(v) => updateItem(item.id, 'colour', v)} disabled={isProcessing} />
+                      {item.colour === 'custom' && (
+                        <div className="mt-2 flex gap-2">
+                          <input
+                            type="color"
+                            value={item.customColour?.startsWith('#') ? item.customColour : '#3B82F6'}
+                            onChange={(e) => updateItem(item.id, 'customColour', e.target.value)}
+                            disabled={isProcessing}
+                            className="w-12 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={item.customColour || ''}
+                            onChange={(e) => updateItem(item.id, 'customColour', e.target.value)}
+                            disabled={isProcessing}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="#3B82F6 or blue tones..."
+                            maxLength={50}
+                          />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Dimensions</label>
-                      <CustomSelect label="" options={[{value: 'auto', label: 'Auto'}, {value: '1280x855', label: 'Landscape'}, {value: '1080x1080', label: 'Square'}]} value={item.dimensions || 'auto'} onChange={(v) => updateItem(item.id, 'dimensions', v)} disabled={isProcessing} />
+                      <CustomSelect label="" options={DIMENSION_OPTIONS} value={item.dimensions || 'auto'} onChange={(v) => updateItem(item.id, 'dimensions', v)} disabled={isProcessing} />
+                      {item.dimensions === 'custom' && (
+                        <input
+                          type="text"
+                          value={item.customDimensions || ''}
+                          onChange={(e) => updateItem(item.id, 'customDimensions', e.target.value)}
+                          disabled={isProcessing}
+                          className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., 1600x900"
+                          maxLength={20}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Branding</label>
+                      <BrandingToggle user={user} useBrand={item.useBrand || false} setUseBrand={(v) => updateItem(item.id, 'useBrand', v)} setShowAccountPanel={setShowAccountPanel} />
                     </div>
                   </div>
                 </div>
