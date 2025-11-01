@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, Sparkles, History, Settings, LogOut, CreditCard, User as UserIcon, Menu, X } from 'lucide-react';
+import { Home, Sparkles, History, Settings, LogOut, CreditCard, User as UserIcon, Menu, X, Shield, Package } from 'lucide-react';
 import { User } from '../lib/supabase';
 
 interface ModernSidebarProps {
   user: User | null;
-  currentView: 'dashboard' | 'generate' | 'history' | 'account';
-  onNavigate: (view: 'dashboard' | 'generate' | 'history' | 'account') => void;
+  currentView: 'dashboard' | 'generate' | 'history' | 'account' | 'admin' | 'bulk';
+  onNavigate: (view: 'dashboard' | 'generate' | 'history' | 'account' | 'admin' | 'bulk') => void;
   onSignOut: () => void;
   isMobileOpen: boolean;
   onMobileToggle: () => void;
@@ -22,9 +22,14 @@ export const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'generate', label: 'Create', icon: Sparkles },
+    { id: 'bulk', label: 'Bulk Process', icon: Package },
     { id: 'history', label: 'History', icon: History },
     { id: 'account', label: 'Account', icon: Settings },
   ];
+
+  if (user?.is_admin) {
+    navItems.push({ id: 'admin', label: 'Admin Panel', icon: Shield });
+  }
 
   return (
     <>

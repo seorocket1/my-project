@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, Wand2, Image as ImageIcon, BarChart3, Zap, Package, ChevronRight } from 'lucide-react';
-import { UnifiedImageForm } from './UnifiedImageForm';
+import { ImprovedImageForm } from './ImprovedImageForm';
 import { ImagePreview } from './ImagePreview';
 import { User } from '../lib/supabase';
 
@@ -183,12 +183,11 @@ export const CreatePage: React.FC<CreatePageProps> = ({
                     <p className="text-gray-600 text-sm mt-1">Provide information to generate your image</p>
                   </div>
                   <div className="p-8">
-                    <UnifiedImageForm
+                    <ImprovedImageForm
                       imageType={selectedType}
                       onSubmit={onSubmit}
                       isLoading={isProcessing}
                       disabled={isProcessing || isBulkProcessing}
-                      onOpenBulkModal={onOpenBulkModal}
                       user={user}
                       setShowAccountPanel={setShowAccountPanel}
                     />

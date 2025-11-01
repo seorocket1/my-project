@@ -7,7 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { CreatePage } from './components/CreatePage';
 import { HistoryPage } from './components/HistoryPage';
 import { AccountPage } from './components/AccountPage';
-import { BulkProcessingModal } from './components/BulkProcessingModal';
+import { BulkProcessPage } from './components/BulkProcessPage';
 import { AdminPanel } from './components/AdminPanel';
 import { SuccessNotification } from './components/SuccessNotification';
 import { AuthModal } from './components/AuthModal';
@@ -47,7 +47,7 @@ export default function ModernApp() {
   const [history, setHistory] = useState<HistoryImage[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'generate' | 'history' | 'account'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'generate' | 'history' | 'account' | 'admin' | 'bulk'>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -387,6 +387,23 @@ export default function ModernApp() {
               onRefresh={refreshUser}
             />
           )}
+
+          {currentView === 'bulk' && (
+            <BulkProcessPage
+              user={user}
+              onBulkProcess={async (data) => {}}
+            />
+          )}
+
+          {currentView === 'admin' && user && user.is_admin && (
+            <div className="p-6">
+              <AdminPanel
+                isOpen={true}
+                onClose={() => setCurrentView('dashboard')}
+                currentUser={user}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -405,14 +422,6 @@ export default function ModernApp() {
           deductCredits={deductCredits}
           getCreditCost={(type) => type === 'blog' ? 5 : 10}
           setShowAccountPanel={setShowAccountPanel}
-        />
-      )}
-
-      {user && user.is_admin && (
-        <AdminPanel
-          isOpen={showAdminPanel}
-          onClose={() => setShowAdminPanel(false)}
-          currentUser={user}
         />
       )}
 
