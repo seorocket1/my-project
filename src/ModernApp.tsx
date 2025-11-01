@@ -4,10 +4,10 @@ import { Helmet } from 'react-helmet-async';
 import { Menu } from 'lucide-react';
 import { ModernSidebar } from './components/ModernSidebar';
 import { Dashboard } from './components/Dashboard';
-import { ModernGeneratePage } from './components/ModernGeneratePage';
-import { ImageHistorySidebar } from './components/ImageHistorySidebar';
+import { CreatePage } from './components/CreatePage';
+import { HistoryPage } from './components/HistoryPage';
+import { AccountPage } from './components/AccountPage';
 import { BulkProcessingModal } from './components/BulkProcessingModal';
-import { AccountPanel } from './components/AccountPanel';
 import { AdminPanel } from './components/AdminPanel';
 import { SuccessNotification } from './components/SuccessNotification';
 import { AuthModal } from './components/AuthModal';
@@ -60,7 +60,6 @@ export default function ModernApp() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
-  const [showHistorySidebar, setShowHistorySidebar] = useState(false);
   const [showAccountPanel, setShowAccountPanel] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -354,13 +353,13 @@ export default function ModernApp() {
               history={history}
               onNavigate={(view) => {
                 if (view === 'generate') setCurrentView('generate');
-                else if (view === 'history') setShowHistorySidebar(true);
+                else if (view === 'history') setCurrentView('history');
               }}
             />
           )}
 
           {currentView === 'generate' && (
-            <ModernGeneratePage
+            <CreatePage
               user={user}
               onSubmit={handleFormSubmit}
               isProcessing={isProcessing}
@@ -375,47 +374,23 @@ export default function ModernApp() {
           )}
 
           {currentView === 'history' && (
-            <div className="p-6">
-              <button
-                onClick={() => setShowHistorySidebar(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold hover:shadow-xl transition-all"
-              >
-                Open History
-              </button>
-            </div>
+            <HistoryPage
+              history={history}
+              onRemoveImage={(id) => setHistory(prev => prev.filter(img => img.id !== id))}
+              onClearAll={() => setHistory([])}
+            />
           )}
 
           {currentView === 'account' && user && (
-            <div className="p-6">
-              <AccountPanel
-                isOpen={true}
-                onClose={() => setCurrentView('dashboard')}
-                user={user}
-                history={history}
-                refreshUser={refreshUser}
-              />
-            </div>
+            <AccountPage
+              user={user}
+              onRefresh={refreshUser}
+            />
           )}
         </div>
       </div>
 
       {/* Modals */}
-      <ImageHistorySidebar
-        isOpen={showHistorySidebar}
-        onClose={() => setShowHistorySidebar(false)}
-        history={history}
-        isLoading={authLoading}
-        clearHistory={() => setHistory([])}
-        removeImage={(id) => setHistory(prev => prev.filter(img => img.id !== id))}
-        forceRefresh={refreshUser}
-        onSelectImage={(image) => {
-          setGeneratedImage({ url: image.url, type: image.type });
-          setFormData({ title: image.title, content: image.content });
-          setShowHistorySidebar(false);
-          setCurrentView('generate');
-        }}
-      />
-
       {showBulkModal && (
         <BulkProcessingModal
           isOpen={showBulkModal}
