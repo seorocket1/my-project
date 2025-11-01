@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageGen - AI-Powered Visuals</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+
+    <!-- Spline -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.26/build/spline-viewer.js"></script>
+
+    <style>
+        body{
+            font-family:'Inter',sans-serif;
+            background:#0A0A0A;
+            color:#E0E0E0;
+            overflow-x:hidden;
+        }
+        .gradient-bg{
+            background:radial-gradient(circle at 50% 0%,rgba(30,30,80,.5) 0%,rgba(10,10,10,0) 50%);
+        }
+        .glass-card{
+            background:rgba(22,22,22,.6);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,.1);
+            transition:all .3s ease;
+        }
+        .glass-card:hover{
+            border:1px solid rgba(255,255,255,.3);
+            transform:translateY(-5px);
+        }
+        .cta-button{
+            background:linear-gradient(90deg,#4F46E5,#A855F7);
+            transition:all .3s ease;
+        }
+        .cta-button:hover{
+            box-shadow:0 0 20px rgba(168,85,247,.5);
+            transform:scale(1.05);
+        }
+        .ticker-wrap{
+            width:100%;
+            overflow:hidden;
+            padding:20px 0;
+            background:#111;
+            border-top:1px solid rgba(255,255,255,.1);
+            border-bottom:1px solid rgba(255,255,255,.1);
+        }
+        .ticker{
+            display:inline-block;
+            white-space:nowrap;
+            animation:ticker-scroll 40s linear infinite;
+        }
+        .ticker-item{
+            display:inline-block;
+            padding:0 2rem;
+            font-size:1.25rem;
+            font-weight:600;
+            color:rgba(255,255,255,.7);
+        }
+        @keyframes ticker-scroll{
+            0%{transform:translateX(0);}
+            100%{transform:translateX(-50%);}
+        }
+        .how-it-works-visual-highlight{
+            transition:all .5s ease;
+            border:2px solid transparent;
+        }
+        .how-it-works-visual-highlight.active{
+            border-color:#A855F7;
+            box-shadow:0 0 20px rgba(168,85,247,.5);
+        }
+        .spline-wrapper{position:relative;}
+        spline-viewer{
+            position:absolute;
+            top:0;left:0;
+            width:100%;height:100%;
+            pointer-events:none;
+        }
+        .spline-wrapper:hover spline-viewer{pointer-events:auto;}
+        section{background:#0A0A0A;position:relative;}
+        .ticker-wrap,footer{background:#111;}
+        #pain-point,#how-it-works{z-index:2;}
+
+        /* ===== Pain Point Section Styles ===== */
+        .pain-point-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .pain-point-slide .text-content {
+            position: relative;
+            z-index: 10;
+        }
+        .pain-point-slide .image-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        .pain-point-slide .image-container img {
+            position: absolute;
+            object-fit: cover;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,.3);
+        }
+
+
+        /* ===== Feature Animations Styles ===== */
+        .animation-container{min-height:14rem;position:relative;overflow:hidden;}
+        .floating-particles{position:absolute;width:100%;height:100%;pointer-events:none;}
+        .particle{position:absolute;width:2px;height:2px;background:rgba(168,85,247,.6);border-radius:50%;}
+
+        /* ===== New Hero Animation Styles ===== */
+        #hero-animation-container {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<header id="main-header" class="fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <div class="flex-shrink-0">
+                <a href="#" class="text-2xl font-bold text-white">ImageGen</a>
+            </div>
+            <div class="hidden md:block">
+                <a href="#" onclick="event.preventDefault(); window.showAuthModal();" class="cta-button inline-block text-white font-bold text-sm px-6 py-2 rounded-full shadow-lg">Sign In</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden p-4 gradient-bg">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-20">
+        <div class="text-center md:text-left">
+            <h1 class="hero-element text-5xl md:text-6xl font-extrabold tracking-tight mb-4 text-white">
+                <span class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">AI Image Generator</span>
+            </h1>
+            <p class="hero-element text-lg md:text-xl max-w-3xl mx-auto md:mx-0 text-gray-300 mb-6">Create stunning blog featured images and infographics with the power of AI.</p>
+            
+            <div class="hero-element flex flex-wrap justify-center md:justify-start gap-4 mb-8 text-sm">
+                <span class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-check text-green-400" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.06.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.007 8 1.007c-.531 0-1.552.283-2.662.583zM8.354 10.354l-3-3a.5.5 0 0 1 .708-.708L7.5 8.793l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0z"/></svg>Powered by SEO Engine</span>
+                <span class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image-plus text-blue-400" viewBox="0 0 16 16"><path d="M16 8c0 3.866-3.134 7-7 7-3.865 0-7-3.134-7-7 0-3.866 3.135-7 7-7 3.866 0 7 3.134 7 7ZM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3Z"/><path d="M2 3.5A1.5 1.5 0 0 1 3.5 2h9A1.5 1.5 0 0 1 14 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 12.5v-9Zm1.5-1a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-9Z"/></svg>Add Custom Images</span>
+                <span class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stack text-orange-400" viewBox="0 0 16 16"><path d="M1.5 1.637a.5.5 0 0 1 .408-.188l5.5-2.5a.5.5 0 0 1 .176 0l5.5 2.5a.5.5 0 0 1 .408.188l2.5 5.5a.5.5 0 0 1-.188.408l-2.5 5.5a.5.5 0 0 1-.408.188l-5.5 2.5a.5.5 0 0 1-.176 0l-5.5-2.5a.5.5 0 0 1-.408-.188l-2.5-5.5a.5.5 0 0 1 .188-.408l2.5-5.5zM2.48 7.373 4.5 11.5h7l2.02-4.127L8 4.873 2.48 7.373z"/></svg>Bulk Generation</span>
+            </div>
+            
+            <div class="hero-element grid grid-cols-3 gap-4 text-center mb-8">
+                <div>
+                    <p class="text-3xl font-bold">10K+</p>
+                    <p class="text-sm text-gray-400">Images Generated</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold">99.9%</p>
+                    <p class="text-sm text-gray-400">Uptime</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold">30s</p>
+                    <p class="text-sm text-gray-400">Avg Generation</p>
+                </div>
+            </div>
+
+            <div class="hero-element flex flex-col items-center md:items-start">
+                <a href="#" onclick="event.preventDefault(); window.showAuthModal();" class="cta-button inline-block text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg">Start Creating Free</a>
+                 <div class="mt-3 text-center">
+                    <p class="text-white font-semibold">Get 100 Free Credits</p>
+                    <p class="text-sm text-gray-400">No credit card required.</p>
+                </div>
+            </div>
+        </div>
+        <div class="hidden md:block">
+            <div id="hero-animation-container" class="w-full h-full relative glass-card rounded-2xl p-4 overflow-hidden">
+                <!-- Animation will be injected here -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Ticker -->
+<section class="ticker-wrap">
+    <div class="ticker">
+        <div class="ticker-item">INSTANT INFOGRAPHICS</div><div class="ticker-item">●</div>
+        <div class="ticker-item">BLOG IMAGES IN SECONDS</div><div class="ticker-item">●</div>
+        <div class="ticker-item">AI-POWERED CREATIVITY</div><div class="ticker-item">●</div>
+        <div class="ticker-item">NO DESIGN SKILLS NEEDED</div><div class="ticker-item">●</div>
+        <div class="ticker-item">INSTANT INFOGRAPHICS</div><div class="ticker-item">●</div>
+        <div class="ticker-item">BLOG IMAGES IN SECONDS</div><div class="ticker-item">●</div>
+        <div class="ticker-item">AI-POWERED CREATIVITY</div><div class="ticker-item">●</div>
+        <div class="ticker-item">NO DESIGN SKILLS NEEDED</div><div class="ticker-item">●</div>
+    </div>
+</section>
+
+<section id="pain-point" class="relative h-[300vh]">
+    <div class="sticky-container sticky top-0 h-screen overflow-hidden">
+        <div class="pain-point-slider-wrapper relative h-full w-full">
+            <!-- Slide 1 -->
+            <div class="pain-point-slide">
+                <div class="text-content text-4xl md:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto text-center"><p>Stop waiting on designers.</p></div>
+                <div class="image-container">
+                    <img src="https://images.unsplash.com/photo-1516116216624-53e697320f64?q=80&w=800&auto=format&fit=crop" class="w-48 h-64" style="top:15%;left:10%;" onerror="this.onerror=null;this.src='https://placehold.co/192x256/111827/E5E7EB?text=Image+1';">
+                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726a?q=80&w=800&auto=format&fit=crop" class="w-64 h-48" style="bottom:20%;left:25%;" onerror="this.onerror=null;this.src='https://placehold.co/256x192/111827/E5E7EB?text=Image+2';">
+                    <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=800&auto=format&fit=crop" class="w-40 h-56" style="top:20%;right:15%;" onerror="this.onerror=null;this.src='https://placehold.co/160x224/111827/E5E7EB?text=Image+3';">
+                    <img src="https://images.unsplash.com/photo-1614850523011-8f49ffc73908?q=80&w=800&auto=format&fit=crop" class="w-56 h-40" style="bottom:15%;right:18%;" onerror="this.onerror=null;this.src='https://placehold.co/224x160/111827/E5E7EB?text=Image+4';">
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="pain-point-slide">
+                <div class="text-content text-4xl md:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto text-center"><p>Stop spending hours on complex tools.</p></div>
+                <div class="image-container">
+                    <img src="https://images.unsplash.com/photo-1535378620166-273708d44e4c?q=80&w=800&auto=format&fit=crop" class="w-56 h-32" style="top:25%;right:15%;" onerror="this.onerror=null;this.src='https://placehold.co/224x128/111827/E5E7EB?text=Image+5';">
+                    <img src="https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=800&auto=format&fit=crop" class="w-32 h-48" style="bottom:50%;left:10%;" onerror="this.onerror=null;this.src='https://placehold.co/128x192/111827/E5E7EB?text=Image+6';">
+                    <img src="https://images.unsplash.com/photo-1587440871875-191322ee64b0?q=80&w=800&auto=format&fit=crop" class="w-48 h-32" style="top:15%;left:30%;" onerror="this.onerror=null;this.src='https://placehold.co/192x128/111827/E5E7EB?text=Image+7';">
+                    <img src="https://images.unsplash.com/photo-1496065187959-7f07b8353c55?q=80&w=800&auto=format&fit=crop" class="w-40 h-56" style="bottom:10%;right:40%;" onerror="this.onerror=null;this.src='https://placehold.co/160x224/111827/E5E7EB?text=Image+8';">
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="pain-point-slide">
+                <div class="text-content text-4xl md:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto text-center"><p>Create professional visuals in 30 seconds.</p></div>
+                <div class="image-container">
+                    <img src="https://images.unsplash.com/photo-1633114128174-2f8aa49759b0?q=80&w=800&auto=format&fit=crop" class="w-48 h-64" style="top:10%;left:20%;" onerror="this.onerror=null;this.src='https://placehold.co/192x256/111827/E5E7EB?text=Image+9';">
+                    <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800&auto=format&fit=crop" class="w-64 h-48" style="bottom:15%;left:15%;" onerror="this.onerror=null;this.src='https://placehold.co/256x192/111827/E5E7EB?text=Image+10';">
+                    <img src="https://images.unsplash.com/photo-1611926653458-092a42e8ab05?q=80&w=800&auto=format&fit=crop" class="w-40 h-56" style="top:15%;right:10%;" onerror="this.onerror=null;this.src='https://placehold.co/160x224/111827/E5E7EB?text=Image+11';">
+                    <img src="https://images.unsplash.com/photo-1611262588024-d12430b98920?q=80&w=800&auto=format&fit=crop" class="w-56 h-40" style="bottom:25%;right:20%;" onerror="this.onerror=null;this.src='https://placehold.co/224x160/111827/E5E7EB?text=Image+12';">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== NEW FEATURE SECTION ===== -->
+<section id="features" class="py-20 md:py-32 px-4">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-center text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-16 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+            Feature Animations
+        </h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- AI Speed -->
+            <div class="feature-card glass-card rounded-2xl p-6 flex flex-col hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300">
+                <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                    <span class="text-purple-400">⚡</span>AI Powered Image Gen Speed
+                </h3>
+                <p class="text-gray-300 mb-4">Drastically reduce time and cost with lightning-fast generation.</p>
+                <div class="animation-container bg-gradient-to-br from-black/40 to-purple-900/20 rounded-lg p-4 mt-auto flex justify-center items-center relative">
+                    <div class="floating-particles" id="speed-particles"></div>
+                    <div id="speed-animation" class="w-full h-full relative"></div>
+                </div>
+            </div>
+
+            <!-- Custom Solutions -->
+            <div class="feature-card glass-card rounded-2xl p-6 flex flex-col hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300">
+                <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                    <span class="text-blue-400">🎨</span>Custom Solution For All Needs
+                </h3>
+                <p class="text-gray-300 mb-4">Adaptive designs that transform for every purpose.</p>
+                <div class="animation-container bg-gradient-to-br from-black/40 to-blue-900/20 rounded-lg p-4 mt-auto flex justify-center items-center relative">
+                    <div class="floating-particles" id="solution-particles"></div>
+                    <div id="solution-animation" class="w-full h-full relative"></div>
+                </div>
+            </div>
+
+            <!-- Personal Branding -->
+            <div class="feature-card glass-card rounded-2xl p-6 flex flex-col hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300">
+                <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                    <span class="text-emerald-400">🧬</span>Add Your Personal Branding
+                </h3>
+                <p class="text-gray-300 mb-4">Seamlessly infuse your brand DNA into every creation.</p>
+                <div class="animation-container bg-gradient-to-br from-black/40 to-emerald-900/20 rounded-lg p-4 mt-auto flex justify-center items-center relative">
+                    <div class="floating-particles" id="branding-particles"></div>
+                    <div id="branding-animation" class="w-full h-full relative"></div>
+                </div>
+            </div>
+
+            <!-- Bulk Operations -->
+            <div class="feature-card glass-card rounded-2xl p-6 flex flex-col hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300">
+                <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                    <span class="text-orange-400">🚀</span>Very Scalable Bulk Operations
+                </h3>
+                <p class="text-gray-300 mb-4">Quantum-scale generation that multiplies your productivity.</p>
+                <div class="animation-container bg-gradient-to-br from-black/40 to-orange-900/20 rounded-lg p-4 mt-auto flex justify-center items-center relative">
+                    <div class="floating-particles" id="bulk-particles"></div>
+                    <div id="bulk-animation" class="w-full h-full relative"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Image Types -->
+<section id="image-types" class="py-20 md:py-32 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Two Powerful Tools in One</h2>
+            <p class="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-gray-300">Whether you need a stunning hero image for your next article or a compelling infographic for social media, we've got you covered.</p>
+        </div>
+        <div class="glass-card rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8">
+            <div class="w-full md:w-1/2 h-80 bg-black/30 rounded-lg relative spline-wrapper">
+                <spline-viewer url="https://prod.spline.design/p64LwBwd47KRBIFj/scene.splinecode"></spline-viewer>
+            </div>
+            <div class="w-full md:w-1/2">
+                <div id="image-types-controls" class="flex flex-col gap-4">
+                    <button data-type="blog" class="image-type-btn text-left p-4 rounded-lg border border-purple-500 bg-purple-500/20">
+                        <h4 class="text-xl font-bold text-white">Blog Visuals</h4>
+                        <p class="text-gray-300 mt-1">Create stunning header images and in-article visuals that perfectly match your content.</p>
+                    </button>
+                    <button data-type="infographic" class="image-type-btn text-left p-4 rounded-lg border border-transparent hover:border-purple-500 transition">
+                        <h4 class="text-xl font-bold text-white">Infographics</h4>
+                        <p class="text-gray-300 mt-1">Turn complex data into beautiful, shareable infographics that are easy to understand.</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works" class="py-20 md:py-32 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Three Steps to Perfection</h2>
+            <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-gray-300">Our process is designed for speed and simplicity. Go from idea to finished asset in under a minute.</p>
+        </div>
+        <div class="how-it-works-grid grid grid-cols-1 lg:grid-cols-2 gap-16 relative">
+            <div class="how-it-works-steps-wrapper h-full">
+                <div class="how-it-works-steps space-y-32">
+                    <div class="how-it-works-step">
+                        <span class="text-purple-400 font-bold">Step 1</span>
+                        <h3 class="text-3xl font-bold text-white mt-2 mb-4">Describe Your Image</h3>
+                        <p class="text-gray-300">Start with a simple or detailed text prompt. The more detail you provide, the better the result. Think about the subject, style, colors, and mood.</p>
+                    </div>
+                    <div class="how-it-works-step">
+                        <span class="text-purple-400 font-bold">Step 2</span>
+                        <h3 class="text-3xl font-bold text-white mt-2 mb-4">Select a Style</h3>
+                        <p class="text-gray-300">Choose from options like Photorealistic, 3D Render, Flat Graphic, or Infographic to guide the AI. This ensures the output matches your brand's aesthetic.</p>
+                    </div>
+                    <div class="how-it-works-step">
+                        <span class="text-purple-400 font-bold">Step 3</span>
+                        <h3 class="text-3xl font-bold text-white mt-2 mb-4">Generate & Refine</h3>
+                        <p class="text-gray-300">Click generate and receive multiple options in seconds. Tweak your prompt or settings to get the perfect image for your content.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="sticky-visual sticky top-32 h-[500px] hidden lg:block">
+                <div class="glass-card rounded-2xl p-6 h-full flex flex-col justify-center space-y-4">
+                    <div id="visual-step-1" class="how-it-works-visual-highlight bg-black/30 rounded-lg p-4">
+                        <label class="text-sm font-medium text-gray-400">Your Prompt</label>
+                        <div class="mt-2 bg-gray-800 rounded-md p-3 text-gray-200">A stunning blog visual about the future of AI...</div>
+                    </div>
+                    <div id="visual-step-2" class="how-it-works-visual-highlight bg-black/30 rounded-lg p-4">
+                        <label class="text-sm font-medium text-gray-400">Style</label>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <span class="bg-gray-700 text-white text-sm font-medium px-3 py-1 rounded-full">Photorealistic</span>
+                            <span class="bg-purple-500/50 text-purple-200 ring-2 ring-purple-400 text-sm font-medium px-3 py-1 rounded-full">3D Render</span>
+                            <span class="bg-gray-700 text-white text-sm font-medium px-3 py-1 rounded-full">Infographic</span>
+                        </div>
+                    </div>
+                    <div id="visual-step-3" class="how-it-works-visual-highlight bg-black/30 rounded-lg p-4">
+                        <a href="#" class="w-full cta-button inline-block text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg text-center">Generate</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing" class="py-20 md:py-32 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Simple, Transparent Pricing</h2>
+            <p class="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-gray-300">Choose the plan that's right for you. No hidden fees.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Free -->
+            <div class="glass-card rounded-2xl p-8 flex flex-col">
+                <h3 class="text-2xl font-bold text-white">Free</h3>
+                <p class="text-gray-400 mt-2">For starters</p>
+                <div class="mt-8"><span class="text-5xl font-extrabold text-white">$0</span><span class="text-gray-400">/ month</span></div>
+                <ul class="space-y-4 mt-8 text-gray-300 flex-grow">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>100 credits/month</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Basic image generation</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Community support</li>
+                </ul>
+                <a href="#" class="mt-8 w-full text-center cta-button inline-block text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg">Get Started</a>
+            </div>
+            <!-- Pro -->
+            <div class="glass-card rounded-2xl p-8 flex flex-col border-2 border-purple-500 relative">
+                <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
+                    <span class="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Most Popular</span>
+                </div>
+                <h3 class="text-2xl font-bold text-white">Pro</h3>
+                <p class="text-gray-400 mt-2">For professionals</p>
+                <div class="mt-8"><span class="text-5xl font-extrabold text-white">$29</span><span class="text-gray-400">/ month</span></div>
+                <ul class="space-y-4 mt-8 text-gray-300 flex-grow">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>2,000 credits/month</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Advanced generation tools</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Bulk operations</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Priority support</li>
+                </ul>
+                <a href="#" class="mt-8 w-full text-center cta-button inline-block text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg">Choose Pro</a>
+            </div>
+            <!-- Enterprise -->
+            <div class="glass-card rounded-2xl p-8 flex flex-col">
+                <h3 class="text-2xl font-bold text-white">Enterprise</h3>
+                <p class="text-gray-400 mt-2">For teams</p>
+                <div class="mt-8"><span class="text-5xl font-extrabold text-white">Custom</span></div>
+                <ul class="space-y-4 mt-8 text-gray-300 flex-grow">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Unlimited credits</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Custom branding & models</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Dedicated account manager</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Team collaboration features</li>
+                </ul>
+                <a href="#" class="mt-8 w-full text-center cta-button inline-block text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg">Contact Us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-black/50 border-t border-white/10 py-12 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+        <div>
+            <h3 class="text-2xl font-bold text-white">ImageGen</h3>
+            <p class="text-gray-400 mt-2">Your Vision, Instantly Visualized.</p>
+        </div>
+        <div class="flex space-x-6 mt-8 md:mt-0">
+            <a href="#" class="text-gray-400 hover:text-white transition">Terms</a>
+            <a href="#" class="text-gray-400 hover:text-white transition">Privacy</a>
+            <a href="#" class="text-gray-400 hover:text-white transition">Contact</a>
+        </div>
+    </div>
+    <div class="text-center text-gray-500 mt-12 border-t border-white/10 pt-8">&copy; 2024 ImageGen. All Rights Reserved.</div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    /* ===== GSAP & ScrollTrigger setup ===== */
+    gsap.registerPlugin(ScrollTrigger, TextPlugin, MotionPathPlugin);
+
+    /* ---------- HERO ANIMATION ---------- */
+    const heroAnimationContainer = document.getElementById('hero-animation-container');
+    if (heroAnimationContainer) {
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
+
+        const createDiv = (className, innerHTML = '') => {
+            const div = document.createElement('div');
+            div.className = className;
+            div.innerHTML = innerHTML;
+            heroAnimationContainer.appendChild(div);
+            return div;
+        };
+
+        const prompts = [
+            'A stunning <span class="text-purple-300">blog visual</span> about AI...',
+            'A compelling <span class="text-pink-300">infographic</span> about data...'
+        ];
+        
+        const visuals = [
+            {
+                className: 'w-64 h-40 bg-gradient-to-br from-purple-500 to-indigo-600 flex flex-col items-center justify-center text-white p-4',
+                innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-file-text mb-2 opacity-70" viewBox="0 0 16 16"><path d="M5 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm1.5 0a.5.5 0 0 0-.5.5v12a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5V2a.5.5 0 0 0-.5-.5h-13z"/><path d="M5 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/></svg><span class="font-semibold">Blog Visual</span>`
+            },
+            {
+                className: 'w-40 h-64 bg-gradient-to-br from-pink-500 to-rose-600 flex flex-col items-center justify-center text-white p-4',
+                innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-bar-chart-line mb-2 opacity-70" viewBox="0 0 16 16"><path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1V2zM2 13h2v-3a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v3zm4 0h2V7a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v6zm4 0h2V2a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v11z"/></svg><span class="font-semibold">Infographic</span>`
+            }
+        ];
+
+        const promptEl = createDiv('absolute bg-gray-800/80 p-3 rounded-lg text-sm shadow-lg text-white');
+        const visualEl = createDiv('absolute rounded-lg shadow-lg');
+
+        gsap.set([promptEl, visualEl], { autoAlpha: 0, scale: 0.5 });
+
+        function runAnimation(index) {
+            const subTl = gsap.timeline();
+            subTl.set(promptEl, { innerHTML: prompts[index] })
+                 .fromTo(promptEl, { autoAlpha: 0, y: 20, scale: 0.8 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: 'back.out(1.7)' })
+                 .set(visualEl, { 
+                    className: 'absolute rounded-lg shadow-lg ' + visuals[index].className,
+                    innerHTML: visuals[index].innerHTML
+                 }, "+=0.5")
+                 .to(promptEl, { autoAlpha: 0, y: -20, scale: 0.8, duration: 0.5, ease: 'power2.in' }, "<")
+                 .fromTo(visualEl, { autoAlpha: 0, y: 20, scale: 0.8 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: 'back.out(1.7)' })
+                 .to(visualEl, { autoAlpha: 0, y: -20, scale: 0.8, duration: 0.5, ease: 'power2.in' }, "+=2");
+            return subTl;
+        }
+
+        tl.add(runAnimation(0))
+          .add(runAnimation(1), "+=1");
+    }
+
+
+    /* ---------- UTILITY FUNCTIONS ---------- */
+    // This function creates a pinning ScrollTrigger for a given timeline.
+    const createPinningScrollTrigger = (trigger, pin, tl) => {
+        ScrollTrigger.create({
+            animation: tl,
+            trigger,
+            pin,
+            start: "top top",
+            end: "bottom bottom", 
+            scrub: 1,
+            onToggle: self => gsap.set(trigger, { zIndex: self.isActive ? 2 : 1 })
+        });
+    };
+
+    /* ---------- HEADER / HERO ---------- */
+    // Animate header and hero elements on page load.
+    gsap.from('#main-header', { y: -100, duration: 1, ease: 'power3.out', delay: .5 });
+    gsap.from('.hero-element', { y: 50, opacity: 0, stagger: .2, duration: 1, ease: 'power3.out', delay: .7 });
+
+    /* ---------- PAIN-POINT SLIDER ---------- */
+    const painSection = document.querySelector('#pain-point');
+    if (painSection) {
+        const slides = gsap.utils.toArray('.pain-point-slide');
+        const sticky = painSection.querySelector('.sticky-container');
+        
+        slides.forEach(slide => {
+            const p = slide.querySelector('p');
+            if (p && p.textContent) {
+                p.innerHTML = p.textContent.split(' ').map(w=>`<span class="word">${w}</span>`).join(' ');
+            }
+        });
+
+        gsap.set(slides, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' });
+        gsap.set(slides, { autoAlpha: 0, y: 50 });
+        gsap.set(slides[0], { autoAlpha: 1, y: 0 });
+
+        const tl = gsap.timeline();
+        slides.forEach((slide, i) => {
+            const imgs = slide.querySelectorAll('img');
+            const words = slide.querySelectorAll('.word');
+            gsap.set(imgs, { scale: .8, autoAlpha: 0, rotation: () => gsap.utils.random(-10, 10) });
+            gsap.set(words, { color: '#4A4A4A' });
+
+            // Animate the current slide in
+            tl.to(slide, { autoAlpha: 1, y: 0, duration: 0.5 })
+              .to(imgs, { scale: 1, autoAlpha: 1, rotation: 0, stagger: .1, duration: 0.7 })
+              .to(words, { color: '#E0E0E0', stagger: .1, duration: 1 }, '-=0.5');
+
+            // If it's not the last slide, animate it out after a pause
+            if (i < slides.length - 1) {
+                tl.to(slide, { autoAlpha: 0, y: -50, duration: 0.5 }, "+=1"); // Pause for 1 "second" of scroll
+            }
+        });
+        
+        createPinningScrollTrigger(painSection, sticky, tl);
+    }
+
+    /* ---------- FEATURE ANIMATIONS ---------- */
+
+    // Utility to create floating particles in animation containers.
+    const createParticles = (containerId, color) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.background = color;
+            container.appendChild(p);
+            gsap.set(p, { x: gsap.utils.random(0, container.offsetWidth), y: gsap.utils.random(0, container.offsetHeight), scale: gsap.utils.random(.5, 1.2) });
+            gsap.to(p, { y: '-=100', opacity: 0, duration: gsap.utils.random(3, 6), repeat: -1, delay: gsap.utils.random(0, 5), ease: 'power1.out' });
+        }
+    };
+    createParticles('speed-particles', 'rgba(168, 85, 247, 0.6)');
+    createParticles('solution-particles', 'rgba(59, 130, 246, 0.6)');
+    createParticles('branding-particles', 'rgba(34, 197, 94, 0.6)');
+    createParticles('bulk-particles', 'rgba(249, 115, 22, 0.6)');
+
+    // Animation for "AI Speed" feature card.
+    const animateSpeed = () => {
+        const container = document.getElementById('speed-animation');
+        if (!container) return;
+        container.innerHTML = '';
+        const taskListHTML = id => `<div id="${id}" class="w-28 space-y-2">${Array(4).fill('<div class="w-full h-4 bg-gray-700 rounded-sm"></div>').join('')}</div>`;
+        container.innerHTML = `
+            <div class="absolute text-center"><div class="font-bold text-purple-400 mb-2">AI</div>${taskListHTML('ai-tasks')}</div>
+            <div class="absolute text-center"><div class="font-bold text-red-400 mb-2">HUMAN</div>${taskListHTML('human-tasks')}</div>
+            <div class="absolute text-2xl font-black text-gray-400">VS</div>
+        `;
+        const [aiSide, humanSide, vs] = container.children;
+        gsap.set([aiSide, humanSide, vs], { left: '50%', top: '50%', xPercent: -50, yPercent: -50 });
+        gsap.set(aiSide, { xPercent: -170 });
+        gsap.set(humanSide, { xPercent: 70 });
+        const humanTasks = document.querySelectorAll('#human-tasks > div');
+        const aiTasks = document.querySelectorAll('#ai-tasks > div');
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 2 });
+        tl.from([aiSide, humanSide, vs], { opacity: 0, scale: .8, stagger: .2, duration: .7 })
+          .to(humanTasks, { backgroundColor: '#EF4444', duration: .6, stagger: .6, ease: 'power1.inOut' }, .5)
+          .to(aiTasks, { backgroundColor: '#A855F7', duration: .2, stagger: .1, ease: 'power2.out' }, .5)
+          .to([aiSide, humanSide, vs], { opacity: 0, duration: .5 }, '+=1')
+          .set([...humanTasks, ...aiTasks], { backgroundColor: '#374151' });
+    };
+    animateSpeed();
+
+    // Animation for "Custom Solutions" feature card.
+    const animateSolutions = () => {
+        const container = document.getElementById('solution-animation');
+        if (!container) return;
+        container.innerHTML = '';
+        const morph = document.createElement('div');
+        morph.className = 'absolute';
+        const label = document.createElement('div');
+        label.className = 'absolute text-center text-xs text-blue-300 font-mono';
+        container.append(morph, label);
+        gsap.set([morph, label], { left: '50%', top: '50%', xPercent: -50, yPercent: -50 });
+        gsap.set(label, { y: '+=85px', width: '200px' });
+
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.5, defaults: { duration: .8, ease: 'elastic.out(1, .75)' } });
+        tl.addLabel('blog')
+          .to(label, { duration: 1.2, text: { value: 'Generating blog visual...' }, ease: 'none' }, 'blog')
+          .to(morph, {
+              width: 120, height: 80,
+              background: 'linear-gradient(135deg,#3B82F6,#60A5FA)',
+              borderRadius: '8px',
+              innerHTML: `<div class="w-full h-full p-2 flex flex-col gap-1"><div class="w-1/3 h-2 bg-white/50 rounded-full"></div><div class="w-full h-1 bg-white/30 rounded-full"></div><div class="w-full h-1 bg-white/30 rounded-full"></div><div class="w-3/4 h-1 bg-white/30 rounded-full"></div></div>`
+          }, 'blog')
+          .addLabel('infographic', '+=1.5')
+          .to(label, { duration: 1.2, text: { value: 'Generating infographic for your content...' }, ease: 'none' }, 'infographic')
+          .to(morph, {
+              width: 80, height: 120,
+              background: 'linear-gradient(135deg,#8B5CF6,#A78BFA)',
+              innerHTML: `<div class="w-full h-full p-2 flex justify-around items-end gap-1"><div class="w-3 h-1/2 bg-white/50 rounded-t-sm"></div><div class="w-3 h-3/4 bg-white/50 rounded-t-sm"></div><div class="w-3 h-1/3 bg-white/50 rounded-t-sm"></div></div>`
+          }, 'infographic')
+          .to([morph, label], { opacity: 0, scale: .8, duration: .5, ease: 'power1.in' }, '+=1.5')
+          .set(label, { text: '' });
+    };
+    animateSolutions();
+
+    // Animation for "Personal Branding" feature card.
+    const animateBranding = () => {
+        const container = document.getElementById('branding-animation');
+        if (!container) return;
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.5, onRepeat: () => { container.innerHTML = ''; setup(); } });
+
+        function setup() {
+            const generic = `<div class="absolute w-28 h-32 bg-gray-700 border-2 border-gray-500 rounded-lg p-3 flex flex-col gap-2"><div class="w-1/2 h-4 bg-gray-500 rounded"></div><div class="w-full h-2 bg-gray-500 rounded"></div><div class="w-full h-2 bg-gray-500 rounded"></div><div class="w-3/4 h-2 bg-gray-500 rounded"></div></div>`;
+            const brandKit = `<div class="absolute flex flex-col items-center gap-2"><div class="brand-logo w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-lg">B</div><div class="brand-palette flex gap-1"><div class="w-4 h-4 rounded-full bg-emerald-500"></div><div class="w-4 h-4 rounded-full bg-blue-500"></div><div class="w-4 h-4 rounded-full bg-purple-500"></div></div></div>`;
+            container.innerHTML = generic + brandKit;
+            const [template, kit] = container.children;
+            gsap.set([template, kit], { left: '50%', top: '50%', xPercent: -50, yPercent: -50 });
+            gsap.set(kit, { yPercent: -150 });
+
+            tl.clear()
+              .from([template, kit], { opacity: 0, scale: .8, stagger: .2, duration: .7, ease: 'back.out(1.7)' })
+              .addLabel('merge', '+=.5')
+              .to(kit, { yPercent: -50, scale: 0, opacity: 0, duration: .7, ease: 'back.in(1.7)' }, 'merge')
+              .to(template, { borderColor: '#34D399', scale: 1.1, duration: .5 }, 'merge+=.2')
+              .to(template.children, { backgroundColor: (i) => ['#10B981', '#3B82F6', '#3B82F6', '#8B5CF6'][i], stagger: .1, duration: .5 }, 'merge+=.2')
+              .to(template, { scale: 1, duration: .5, ease: 'back.out(1.7)' })
+              .to(template, { opacity: 0, scale: .8, duration: .5, ease: 'power1.in' }, '+=1.5');
+        }
+        setup();
+    };
+    animateBranding();
+
+    // Animation for "Bulk Operations" feature card.
+    const animateBulkOps = () => {
+        const container = document.getElementById('bulk-animation');
+        if (!container) return;
+        container.innerHTML = '';
+        const core = `<div class="absolute w-8 h-8 bg-orange-500 rounded-full shadow-lg z-10 flex items-center justify-center"><div class="w-4 h-4 bg-yellow-300 rounded-full"></div></div>`;
+        container.innerHTML = core;
+        const elCore = container.children[0];
+        gsap.set(elCore, { left: '50%', top: '50%', xPercent: -50, yPercent: -50 });
+
+        const grid = document.createElement('div');
+        grid.className = 'absolute inset-0 grid grid-cols-6 gap-2 transform scale-90';
+        const cards = [];
+        for (let i = 0; i < 30; i++) {
+            const card = document.createElement('div');
+            card.className = 'w-full h-full bg-gray-800 rounded-md';
+            grid.appendChild(card);
+            cards.push(card);
+        }
+        container.prepend(grid);
+
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.5 });
+        tl.from(elCore, { scale: 0, rotate: -180, duration: .7, ease: 'back.out(1.7)' })
+          .to(elCore.children[0], { scale: 0, repeat: 1, yoyo: true, duration: .4, ease: 'power1.inOut' }, '+=.2')
+          .from(cards, { scale: 0, opacity: 0, stagger: { each: .02, from: 'center', grid: 'auto' }, duration: .6, ease: 'power2.out' }, '-=.3')
+          .to(cards, { backgroundColor: () => `hsl(${gsap.utils.random(25, 55)}, 90%, 60%)`, stagger: { each: .02, from: 'random' }, duration: .5 }, '+=.2')
+          .to(container, { scale: 1.1, duration: 1, ease: 'power1.inOut' }, '-=.5')
+          .to(container, { opacity: 0, duration: .7, ease: 'power1.in' }, '+=1')
+          .set(container, { scale: 1, opacity: 1 });
+    };
+    animateBulkOps();
+
+    /* ---------- HOW IT WORKS ---------- */
+    // This section highlights the steps as the user scrolls.
+    const howItWorksSection = document.querySelector('#how-it-works');
+    if (howItWorksSection && window.innerWidth >= 1024) { // Only run on desktop
+        const steps = gsap.utils.toArray('.how-it-works-step');
+        const visuals = gsap.utils.toArray('.how-it-works-visual-highlight');
+
+        steps.forEach((step, i) => {
+            ScrollTrigger.create({
+                trigger: step,
+                start: 'top center',
+                end: 'bottom center',
+                onEnter: () => {
+                    visuals.forEach(v => v.classList.remove('active'));
+                    if (visuals[i]) { // Check if the visual element exists
+                        visuals[i].classList.add('active');
+                    }
+                },
+                onEnterBack: () => {
+                    visuals.forEach(v => v.classList.remove('active'));
+                    if (visuals[i]) { // Check if the visual element exists
+                        visuals[i].classList.add('active');
+                    }
+                }
+            });
+        });
+    }
+
+    /* ---------- IMAGE TYPES ---------- */
+    // Handles the button clicks for selecting image types.
+    const imageTypeBtns = document.querySelectorAll('.image-type-btn');
+    if (imageTypeBtns.length > 0) {
+        imageTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                imageTypeBtns.forEach(b => {
+                    b.classList.remove('border-purple-500', 'bg-purple-500/20');
+                    b.classList.add('border-transparent');
+                });
+                btn.classList.add('border-purple-500', 'bg-purple-500/20');
+                btn.classList.remove('border-transparent');
+            });
+        });
+    }
+    
+    /* ---------- PRICING ---------- */
+    // Animates the pricing cards into view on scroll.
+    gsap.from('#pricing .glass-card', { y: 60, opacity: 0, stagger: .1, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: '#pricing .grid', start: 'top 85%' } });
+
+    /* ---------- REFRESH SCROLLTRIGGER ---------- */
+    // Refresh ScrollTrigger after a short delay to ensure all elements are loaded and positioned correctly.
+    setTimeout(() => {
+        ScrollTrigger.refresh();
+    }, 500);
+});
+</script>
+<div id="auth-modals-root"></div>
+<div id="modal-container" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:100;">
+    <iframe id="auth-iframe" src="about:blank" style="width:100%; height:100%; border:none;"></iframe>
+</div>
+
+<script>
+    window.showAuthModal = () => {
+        const modalContainer = document.getElementById('modal-container');
+        const iframe = document.getElementById('auth-iframe');
+        if (modalContainer && iframe) {
+            iframe.src = '/auth.html';
+            modalContainer.style.display = 'block';
+        }
+    };
+
+    window.hideAuthModal = () => {
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) {
+            modalContainer.style.display = 'none';
+        }
+    };
+</script>
+</body>
+</html>
