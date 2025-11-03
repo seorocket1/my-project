@@ -1,111 +1,112 @@
 import React, { useState } from 'react';
-import { Package, Image as ImageIcon, BarChart3, Upload, Download, Zap, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Image as ImageIcon, BarChart3, Zap, CheckCircle2, AlertCircle, Package } from 'lucide-react';
 import { User } from '../lib/supabase';
+import { ImprovedImageForm } from './ImprovedImageForm';
 
 interface BulkProcessPageProps {
   user: User | null;
   onBulkProcess: (data: any[]) => Promise<void>;
 }
 
+interface BulkItem {
+  id: string;
+  type: 'blog' | 'infographic';
+  data: any;
+  isExpanded: boolean;
+}
+
 export const BulkProcessPage: React.FC<BulkProcessPageProps> = ({ user, onBulkProcess }) => {
   const [selectedType, setSelectedType] = useState<'blog' | 'infographic'>('blog');
-  const [bulkData, setBulkData] = useState('');
+  const [items, setItems] = useState<BulkItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ completed: 0, total: 0 });
   const [results, setResults] = useState<any[]>([]);
 
-  const parseCSV = (text: string) => {
-    const lines = text.trim().split('\n');
-    if (lines.length < 2) return [];
-
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    const data = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim());
-      const row: any = {};
-      headers.forEach((header, index) => {
-        row[header] = values[index] || '';
-      });
-      data.push(row);
-    }
-
-    return data;
+  const addItem = () => {
+    const newItem: BulkItem = {
+      id: `item-${Date.now()}-${Math.random()}`,
+      type: selectedType,
+      data: {},
+      isExpanded: true
+    };
+    setItems([...items, newItem]);
   };
 
-  const handleProcess = async () => {
-    const lines = bulkData.trim().split('\n').filter(line => line.trim());
-    if (lines.length === 0) return;
+  const removeItem = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
+  };
+
+  const toggleItem = (id: string) => {
+    setItems(items.map(item =>
+      item.id === id ? { ...item, isExpanded: !item.isExpanded } : item
+    ));
+  };
+
+  const updateItemData = (id: string, data: any) => {
+    setItems(items.map(item =>
+      item.id === id ? { ...item, data } : item
+    ));
+  };
+
+  const handleBulkProcess = async () => {
+    if (items.length === 0) return;
 
     setIsProcessing(true);
-    setProgress({ completed: 0, total: lines.length });
+    setProgress({ completed: 0, total: items.length });
     setResults([]);
 
     const processedResults = [];
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const [title, content] = line.split(',').map(s => s.trim());
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
 
       try {
         processedResults.push({
-          title: title || `Item ${i + 1}`,
-          content: content || '',
+          id: item.id,
           status: 'success',
-          type: selectedType
+          type: item.type,
+          title: item.data.title || `Item ${i + 1}`
         });
+
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         processedResults.push({
-          title: title || `Item ${i + 1}`,
-          content: content || '',
+          id: item.id,
           status: 'error',
           error: (error as Error).message,
-          type: selectedType
+          type: item.type,
+          title: item.data.title || `Item ${i + 1}`
         });
       }
 
-      setProgress({ completed: i + 1, total: lines.length });
+      setProgress({ completed: i + 1, total: items.length });
       setResults([...processedResults]);
     }
 
     setIsProcessing(false);
   };
 
-  const downloadTemplate = () => {
-    const template = selectedType === 'blog'
-      ? 'title,content\n"Example Blog Title","Blog post content description"\n"Another Title","More content here"'
-      : 'content\n"First infographic data point"\n"Second infographic data point"';
-
-    const blob = new Blob([template], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bulk-${selectedType}-template.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
   const creditsPerImage = selectedType === 'blog' ? 5 : 10;
-  const totalCreditsNeeded = bulkData.trim().split('\n').filter(line => line.trim()).length * creditsPerImage;
+  const totalCreditsNeeded = items.length * creditsPerImage;
   const hasEnoughCredits = user && user.credits >= totalCreditsNeeded;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-2">
-            Bulk Processing
-          </h1>
-          <p className="text-gray-600">Generate multiple images at once from CSV or text input</p>
+          <div className="flex items-center gap-3 mb-2">
+            <Package className="w-10 h-10 text-emerald-600" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              Bulk Processing
+            </h1>
+          </div>
+          <p className="text-gray-600">Create multiple images at once with individual form controls</p>
         </div>
 
-        {/* Type Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <button
             onClick={() => setSelectedType('blog')}
+            disabled={isProcessing}
             className={`p-6 rounded-3xl transition-all duration-300 ${
               selectedType === 'blog'
                 ? 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-2xl shadow-blue-500/30 scale-105'
@@ -136,6 +137,7 @@ export const BulkProcessPage: React.FC<BulkProcessPageProps> = ({ user, onBulkPr
 
           <button
             onClick={() => setSelectedType('infographic')}
+            disabled={isProcessing}
             className={`p-6 rounded-3xl transition-all duration-300 ${
               selectedType === 'infographic'
                 ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-2xl shadow-purple-500/30 scale-105'
@@ -165,104 +167,133 @@ export const BulkProcessPage: React.FC<BulkProcessPageProps> = ({ user, onBulkPr
           </button>
         </div>
 
-        {/* Template Download */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-6 mb-8 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-2">Need a template?</h3>
-              <p className="text-indigo-100">
-                {selectedType === 'blog'
-                  ? 'Download CSV template with title and content columns'
-                  : 'Download CSV template with content column'}
-              </p>
-            </div>
-            <button
-              onClick={downloadTemplate}
-              className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-semibold hover:shadow-xl transition-all flex items-center gap-2"
-            >
-              <Download className="w-5 h-5" />
-              Download Template
-            </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <p className="text-sm text-gray-600 mb-1">Items to Process</p>
+            <p className="text-3xl font-bold text-gray-900">{items.length}</p>
           </div>
-        </div>
-
-        {/* Input Section */}
-        <div className="bg-white rounded-3xl shadow-lg border border-gray-200/50 p-8 mb-8">
-          <div className="mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Enter Your Data</h3>
-            <p className="text-gray-600">
-              {selectedType === 'blog'
-                ? 'Enter one item per line in format: Title, Content'
-                : 'Enter one content item per line'}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <p className="text-sm text-gray-600 mb-1">Credits Needed</p>
+            <p className="text-3xl font-bold text-gray-900">{totalCreditsNeeded}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <p className="text-sm text-gray-600 mb-1">Your Credits</p>
+            <p className={`text-3xl font-bold ${hasEnoughCredits ? 'text-green-600' : 'text-red-600'}`}>
+              {user?.credits || 0}
             </p>
           </div>
-
-          <textarea
-            value={bulkData}
-            onChange={(e) => setBulkData(e.target.value)}
-            placeholder={
-              selectedType === 'blog'
-                ? 'Example Blog Title, Blog post content\nAnother Title, More content here'
-                : 'First infographic content\nSecond infographic content'
-            }
-            rows={10}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono text-sm"
-          />
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-600 mb-1">Items to Process</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {bulkData.trim().split('\n').filter(line => line.trim()).length}
-              </p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-600 mb-1">Credits Needed</p>
-              <p className="text-2xl font-bold text-gray-900">{totalCreditsNeeded}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-600 mb-1">Your Credits</p>
-              <p className={`text-2xl font-bold ${hasEnoughCredits ? 'text-green-600' : 'text-red-600'}`}>
-                {user?.credits || 0}
-              </p>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <button
-            onClick={handleProcess}
-            disabled={isProcessing || !bulkData.trim() || !hasEnoughCredits}
-            className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isProcessing ? (
-              <>
-                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                Processing... {progress.completed}/{progress.total}
-              </>
-            ) : (
-              <>
-                <Zap className="w-6 h-6" />
-                Start Bulk Processing
-              </>
-            )}
-          </button>
-
-          {!hasEnoughCredits && bulkData.trim() && (
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-              <div>
-                <p className="font-semibold text-red-900">Insufficient Credits</p>
-                <p className="text-sm text-red-700">
-                  You need {totalCreditsNeeded} credits but only have {user?.credits || 0}.
-                  Please purchase more credits to continue.
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Progress */}
+        <button
+          onClick={addItem}
+          disabled={isProcessing}
+          className="w-full mb-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <Plus className="w-6 h-6" />
+          Add {selectedType === 'blog' ? 'Blog Image' : 'Infographic'} Item
+        </button>
+
+        {items.length > 0 && (
+          <div className="space-y-4 mb-8">
+            {items.map((item, index) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-3xl shadow-lg border border-gray-200/50 overflow-hidden"
+              >
+                <div
+                  className="flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => toggleItem(item.id)}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${
+                      item.type === 'blog' ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'
+                    } flex items-center justify-center`}>
+                      {item.type === 'blog' ? (
+                        <ImageIcon className="w-6 h-6 text-white" />
+                      ) : (
+                        <BarChart3 className="w-6 h-6 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Item {index + 1} - {item.type === 'blog' ? 'Blog Image' : 'Infographic'}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {item.data.title || 'No title yet'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeItem(item.id);
+                      }}
+                      disabled={isProcessing}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                    {item.isExpanded ? (
+                      <ChevronUp className="w-6 h-6 text-gray-600" />
+                    ) : (
+                      <ChevronDown className="w-6 h-6 text-gray-600" />
+                    )}
+                  </div>
+                </div>
+
+                {item.isExpanded && (
+                  <div className="p-8">
+                    <ImprovedImageForm
+                      imageType={item.type}
+                      onSubmit={(data) => updateItemData(item.id, data)}
+                      isLoading={false}
+                      disabled={isProcessing}
+                      user={user}
+                      setShowAccountPanel={() => {}}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {items.length > 0 && (
+          <div className="mb-8">
+            <button
+              onClick={handleBulkProcess}
+              disabled={isProcessing || items.length === 0 || !hasEnoughCredits}
+              className="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-bold text-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processing... {progress.completed}/{progress.total}
+                </>
+              ) : (
+                <>
+                  <Zap className="w-6 h-6" />
+                  Process All {items.length} Items
+                </>
+              )}
+            </button>
+
+            {!hasEnoughCredits && items.length > 0 && (
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-red-900">Insufficient Credits</p>
+                  <p className="text-sm text-red-700">
+                    You need {totalCreditsNeeded} credits but only have {user?.credits || 0}.
+                    Please purchase more credits to continue.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {isProcessing && (
           <div className="bg-white rounded-3xl shadow-lg border border-gray-200/50 p-8 mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Processing...</h3>
@@ -278,14 +309,13 @@ export const BulkProcessPage: React.FC<BulkProcessPageProps> = ({ user, onBulkPr
           </div>
         )}
 
-        {/* Results */}
         {results.length > 0 && (
           <div className="bg-white rounded-3xl shadow-lg border border-gray-200/50 p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Results</h3>
             <div className="space-y-3">
               {results.map((result, index) => (
                 <div
-                  key={index}
+                  key={result.id}
                   className={`p-4 rounded-xl border-2 ${
                     result.status === 'success'
                       ? 'bg-green-50 border-green-200'
@@ -295,7 +325,7 @@ export const BulkProcessPage: React.FC<BulkProcessPageProps> = ({ user, onBulkPr
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">
-                        {result.title || `Item ${index + 1}`}
+                        {result.title} ({result.type})
                       </p>
                       {result.status === 'error' && (
                         <p className="text-sm text-red-600 mt-1">{result.error}</p>
@@ -310,6 +340,18 @@ export const BulkProcessPage: React.FC<BulkProcessPageProps> = ({ user, onBulkPr
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {items.length === 0 && !isProcessing && results.length === 0 && (
+          <div className="bg-white rounded-3xl shadow-lg border border-gray-200/50 p-12 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Items Added Yet</h3>
+            <p className="text-gray-600 mb-6">
+              Click "Add Item" above to start creating multiple {selectedType === 'blog' ? 'blog images' : 'infographics'} at once
+            </p>
           </div>
         )}
       </div>
