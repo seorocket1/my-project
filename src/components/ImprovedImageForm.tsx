@@ -211,11 +211,11 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
                 value={formData.colour}
                 onChange={(e) => updateField('colour', e.target.value)}
                 disabled={disabled}
-                className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 bg-white cursor-pointer transition-all appearance-none"
+                className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 bg-white text-gray-900 font-medium cursor-pointer transition-all appearance-none"
                 style={{ backgroundImage: 'none' }}
               >
                 {colorOptions.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                  <option key={option.value} value={option.value} className="text-gray-900">{option.label}</option>
                 ))}
               </select>
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
@@ -265,11 +265,11 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
               value={formData.dimensions}
               onChange={(e) => updateField('dimensions', e.target.value)}
               disabled={disabled}
-              className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 bg-white cursor-pointer transition-all appearance-none"
+              className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 bg-white text-gray-900 font-medium cursor-pointer transition-all appearance-none"
               style={{ backgroundImage: 'none' }}
             >
               {dimensionOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+                <option key={option.value} value={option.value} className="text-gray-900">{option.label}</option>
               ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
