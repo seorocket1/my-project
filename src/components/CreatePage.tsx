@@ -153,17 +153,25 @@ export const CreatePage: React.FC<CreatePageProps> = ({
   bulkProgress
 }) => {
   const [selectedType, setSelectedType] = useState<'blog' | 'infographic' | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'blog' | 'infographic' | 'social'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'blog' | 'infographic' | 'instagram' | 'linkedin' | 'facebook'>('all');
 
   const categories = [
-    { id: 'all', label: 'All Types', count: imageTypes.length },
-    { id: 'blog', label: 'Blog', count: imageTypes.filter(t => t.category === 'blog').length },
-    { id: 'infographic', label: 'Infographic', count: imageTypes.filter(t => t.category === 'infographic').length },
-    { id: 'social', label: 'Social Media', count: imageTypes.filter(t => t.category === 'social').length },
+    { id: 'all', label: 'All Types', icon: Sparkles, count: imageTypes.length },
+    { id: 'blog', label: 'Blog', icon: ImageIcon, count: imageTypes.filter(t => t.category === 'blog').length },
+    { id: 'infographic', label: 'Infographic', icon: BarChart3, count: imageTypes.filter(t => t.category === 'infographic').length },
+    { id: 'instagram', label: 'Instagram', icon: Instagram, count: imageTypes.filter(t => t.id.startsWith('instagram')).length },
+    { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, count: imageTypes.filter(t => t.id.startsWith('linkedin')).length },
+    { id: 'facebook', label: 'Facebook', icon: Facebook, count: imageTypes.filter(t => t.id.startsWith('facebook')).length },
   ];
 
   const filteredTypes = selectedCategory === 'all'
     ? imageTypes
+    : selectedCategory === 'instagram'
+    ? imageTypes.filter(t => t.id.startsWith('instagram'))
+    : selectedCategory === 'linkedin'
+    ? imageTypes.filter(t => t.id.startsWith('linkedin'))
+    : selectedCategory === 'facebook'
+    ? imageTypes.filter(t => t.id.startsWith('facebook'))
     : imageTypes.filter(t => t.category === selectedCategory);
 
   const availableTypes = filteredTypes.filter(t => t.available);
@@ -182,20 +190,26 @@ export const CreatePage: React.FC<CreatePageProps> = ({
         {!selectedType ? (
           <>
             {/* Category Filter */}
-            <div className="flex flex-wrap gap-3 mb-8">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id as any)}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                    selectedCategory === cat.id
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300'
-                  }`}
-                >
-                  {cat.label} <span className="ml-2 opacity-75">({cat.count})</span>
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-3 mb-10">
+              {categories.map((cat) => {
+                const CategoryIcon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id as any)}
+                    className={`px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2.5 ${
+                      selectedCategory === cat.id
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl scale-105'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:shadow-md hover:scale-105'
+                    }`}
+                  >
+                    <CategoryIcon className="w-5 h-5" />
+                    {cat.label} <span className={`ml-1 text-sm ${
+                      selectedCategory === cat.id ? 'opacity-90' : 'opacity-60'
+                    }`}>({cat.count})</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Available Types */}
@@ -239,7 +253,7 @@ export const CreatePage: React.FC<CreatePageProps> = ({
               <div>
                 <div className="flex items-center gap-3 mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">Coming Soon</h2>
-                  <span className="px-4 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold rounded-full">
+                  <span className="px-4 py-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-orange-600 text-white text-sm font-bold rounded-full shadow-lg animate-pulse">
                     Next Update
                   </span>
                 </div>
@@ -249,29 +263,34 @@ export const CreatePage: React.FC<CreatePageProps> = ({
                     return (
                       <div
                         key={type.id}
-                        className="relative bg-white rounded-3xl p-8 shadow-lg border border-gray-200/50 text-left opacity-75"
+                        className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 shadow-lg border-2 border-gray-300 text-left overflow-hidden group"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/10 to-gray-900/5 backdrop-blur-[2px] rounded-3xl flex items-center justify-center">
+                        {/* Enhanced overlay with better visibility */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/70 to-gray-100/80 backdrop-blur-sm rounded-3xl flex items-center justify-center z-10">
                           <div className="text-center">
-                            <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                              <Lock className="w-8 h-8 text-white" />
+                            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                              <Lock className="w-10 h-10 text-white" />
                             </div>
-                            <p className="font-bold text-gray-900">Coming Soon</p>
+                            <p className="text-2xl font-bold text-gray-900 mb-1">Coming Soon</p>
+                            <p className="text-sm text-gray-600 font-medium">Stay tuned for updates</p>
                           </div>
                         </div>
 
-                        <div className="flex items-start justify-between mb-6">
-                          <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${type.gradient} flex items-center justify-center`}>
-                            <Icon className="w-8 h-8 text-white" />
+                        {/* Background content */}
+                        <div className="relative opacity-60">
+                          <div className="flex items-start justify-between mb-6">
+                            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow-lg`}>
+                              <Icon className="w-8 h-8 text-white" />
+                            </div>
+                            <span className={`px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r ${type.gradient} text-white shadow-md`}>
+                              {type.credits} credits
+                            </span>
                           </div>
-                          <span className={`px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r ${type.gradient} text-white`}>
-                            {type.credits} credits
-                          </span>
+                          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                            {type.title}
+                          </h3>
+                          <p className="text-gray-700">{type.description}</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                          {type.title}
-                        </h3>
-                        <p className="text-gray-600">{type.description}</p>
                       </div>
                     );
                   })}

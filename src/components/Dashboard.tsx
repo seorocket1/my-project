@@ -134,16 +134,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, history, onNavigate 
             return (
               <div
                 key={index}
-                className={`bg-gradient-to-br ${stat.bgGradient} rounded-3xl p-6 border-2 border-white/50 hover:shadow-2xl transition-all duration-300 hover:scale-105 relative overflow-hidden`}
+                className={`bg-white rounded-3xl p-6 border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:scale-105 relative overflow-hidden group`}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                <div className="relative">
+                {/* Subtle gradient background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-30 group-hover:opacity-40 transition-opacity duration-300`}></div>
+
+                {/* Decorative circle */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full"></div>
+
+                <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`p-3 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
-                      <Icon className="w-6 h-6 text-white" />
+                    <div className={`p-3.5 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-xl group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="w-7 h-7 text-white" />
                     </div>
                     {stat.trend && (
-                      <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-md ${
                         stat.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}>
                         {stat.trend === 'up' ? (
@@ -155,9 +160,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, history, onNavigate 
                       </div>
                     )}
                   </div>
-                  <div className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
+                  <div className="text-5xl font-bold text-gray-900 mb-3">{stat.value}</div>
                   <div>
-                    <p className="font-bold text-gray-900 mb-1 text-lg">{stat.title}</p>
+                    <p className="font-bold text-gray-900 mb-1.5 text-lg">{stat.title}</p>
                     <p className="text-sm text-gray-600 font-medium">{stat.description}</p>
                   </div>
                 </div>
@@ -168,51 +173,51 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, history, onNavigate 
 
         {/* Type Breakdown */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/50 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500">
-                <ImageIcon className="w-6 h-6 text-white" />
+          <div className="bg-white rounded-3xl p-7 border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <div className="flex items-center justify-between mb-5">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <ImageIcon className="w-7 h-7 text-white" />
               </div>
-              <span className="text-3xl font-bold text-gray-900">{blogCount}</span>
+              <span className="text-4xl font-bold text-gray-900">{blogCount}</span>
             </div>
-            <h3 className="font-bold text-gray-900 text-lg mb-1">Blog Images</h3>
-            <p className="text-sm text-gray-600">Featured images created</p>
-            <div className="mt-4 bg-blue-50 rounded-full h-2 overflow-hidden">
+            <h3 className="font-bold text-gray-900 text-xl mb-2">Blog Images</h3>
+            <p className="text-sm text-gray-600 mb-4">Featured images created</p>
+            <div className="bg-blue-50 rounded-full h-2.5 overflow-hidden shadow-inner">
               <div
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600"
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
                 style={{ width: history.length > 0 ? `${(blogCount / history.length) * 100}%` : '0%' }}
               ></div>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/50 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500">
-                <BarChart3 className="w-6 h-6 text-white" />
+          <div className="bg-white rounded-3xl p-7 border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <div className="flex items-center justify-between mb-5">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-7 h-7 text-white" />
               </div>
-              <span className="text-3xl font-bold text-gray-900">{infographicCount}</span>
+              <span className="text-4xl font-bold text-gray-900">{infographicCount}</span>
             </div>
-            <h3 className="font-bold text-gray-900 text-lg mb-1">Infographics</h3>
-            <p className="text-sm text-gray-600">Data visualizations</p>
-            <div className="mt-4 bg-purple-50 rounded-full h-2 overflow-hidden">
+            <h3 className="font-bold text-gray-900 text-xl mb-2">Infographics</h3>
+            <p className="text-sm text-gray-600 mb-4">Data visualizations</p>
+            <div className="bg-purple-50 rounded-full h-2.5 overflow-hidden shadow-inner">
               <div
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-600"
+                className="h-full bg-gradient-to-r from-purple-500 to-pink-600 rounded-full transition-all duration-500"
                 style={{ width: history.length > 0 ? `${(infographicCount / history.length) * 100}%` : '0%' }}
               ></div>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/50 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500">
-                <Star className="w-6 h-6 text-white" />
+          <div className="bg-white rounded-3xl p-7 border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <div className="flex items-center justify-between mb-5">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <Star className="w-7 h-7 text-white" />
               </div>
-              <span className="text-3xl font-bold text-gray-900">{averageCreditsPerImage}</span>
+              <span className="text-4xl font-bold text-gray-900">{averageCreditsPerImage}</span>
             </div>
-            <h3 className="font-bold text-gray-900 text-lg mb-1">Avg Credits</h3>
-            <p className="text-sm text-gray-600">Per image generated</p>
-            <div className="mt-4 bg-orange-50 rounded-full h-2 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-amber-500 to-orange-600 w-3/4"></div>
+            <h3 className="font-bold text-gray-900 text-xl mb-2">Avg Credits</h3>
+            <p className="text-sm text-gray-600 mb-4">Per image generated</p>
+            <div className="bg-orange-50 rounded-full h-2.5 overflow-hidden shadow-inner">
+              <div className="h-full bg-gradient-to-r from-amber-500 to-orange-600 rounded-full w-3/4 transition-all duration-500"></div>
             </div>
           </div>
         </div>
