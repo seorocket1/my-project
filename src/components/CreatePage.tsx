@@ -263,21 +263,27 @@ export const CreatePage: React.FC<CreatePageProps> = ({
                     return (
                       <div
                         key={type.id}
-                        className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 shadow-lg border-2 border-gray-300 text-left overflow-hidden group"
+                        className="relative bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-300 text-left overflow-hidden group hover:shadow-xl transition-all duration-300"
                       >
-                        {/* Enhanced overlay with better visibility */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/70 to-gray-100/80 backdrop-blur-sm rounded-3xl flex items-center justify-center z-10">
-                          <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300">
-                              <Lock className="w-10 h-10 text-white" />
-                            </div>
-                            <p className="text-2xl font-bold text-gray-900 mb-1">Coming Soon</p>
-                            <p className="text-sm text-gray-600 font-medium">Stay tuned for updates</p>
+                        {/* Subtle overlay - shows lock but keeps content visible */}
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] rounded-3xl z-10 pointer-events-none"></div>
+
+                        {/* Lock indicator in corner */}
+                        <div className="absolute top-4 right-4 z-20">
+                          <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                            <Lock className="w-6 h-6 text-white" />
                           </div>
                         </div>
 
-                        {/* Background content */}
-                        <div className="relative opacity-60">
+                        {/* "Coming Soon" badge */}
+                        <div className="absolute bottom-4 left-4 right-4 z-20">
+                          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2 rounded-xl text-center shadow-lg">
+                            <p className="font-bold text-sm">Coming Soon</p>
+                          </div>
+                        </div>
+
+                        {/* Background content - fully visible */}
+                        <div className="relative">
                           <div className="flex items-start justify-between mb-6">
                             <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow-lg`}>
                               <Icon className="w-8 h-8 text-white" />
@@ -289,7 +295,7 @@ export const CreatePage: React.FC<CreatePageProps> = ({
                           <h3 className="text-2xl font-bold text-gray-900 mb-2">
                             {type.title}
                           </h3>
-                          <p className="text-gray-700">{type.description}</p>
+                          <p className="text-gray-600 mb-4">{type.description}</p>
                         </div>
                       </div>
                     );
