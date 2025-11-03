@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wand2, Upload, Palette, Ruler, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Wand2, Upload, Palette, Ruler, Sparkles, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { BrandingToggle } from './BrandingToggle';
 import { supabase } from '../lib/supabase';
@@ -84,6 +84,27 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
   const updateField = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
+
+  const colorOptions = [
+    { value: '', label: 'Default Colors' },
+    { value: 'blue', label: 'Blue Tones' },
+    { value: 'red', label: 'Red Tones' },
+    { value: 'green', label: 'Green Tones' },
+    { value: 'purple', label: 'Purple Tones' },
+    { value: 'orange', label: 'Orange Tones' },
+    { value: 'yellow', label: 'Yellow Tones' },
+    { value: 'pink', label: 'Pink Tones' },
+    { value: 'teal', label: 'Teal Tones' },
+    { value: 'custom', label: 'Custom Color' },
+  ];
+
+  const dimensionOptions = [
+    { value: 'auto', label: 'Auto (Recommended)' },
+    { value: '1280x855', label: 'Landscape - 1280x855' },
+    { value: '1920x1080', label: 'Full HD - 1920x1080' },
+    { value: '1080x1080', label: 'Square - 1080x1080' },
+    { value: 'custom', label: 'Custom Size' },
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -185,23 +206,20 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Color Scheme
             </label>
-            <select
-              value={formData.colour}
-              onChange={(e) => updateField('colour', e.target.value)}
-              disabled={disabled}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 appearance-none bg-white cursor-pointer transition-all"
-            >
-              <option value="">Default Colors</option>
-              <option value="blue">Blue Tones</option>
-              <option value="red">Red Tones</option>
-              <option value="green">Green Tones</option>
-              <option value="purple">Purple Tones</option>
-              <option value="orange">Orange Tones</option>
-              <option value="yellow">Yellow Tones</option>
-              <option value="pink">Pink Tones</option>
-              <option value="teal">Teal Tones</option>
-              <option value="custom">Custom Color</option>
-            </select>
+            <div className="relative">
+              <select
+                value={formData.colour}
+                onChange={(e) => updateField('colour', e.target.value)}
+                disabled={disabled}
+                className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 bg-white cursor-pointer transition-all appearance-none"
+                style={{ backgroundImage: 'none' }}
+              >
+                {colorOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
           </div>
         </div>
 
@@ -242,18 +260,20 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Image Size
           </label>
-          <select
-            value={formData.dimensions}
-            onChange={(e) => updateField('dimensions', e.target.value)}
-            disabled={disabled}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 appearance-none bg-white cursor-pointer transition-all"
-          >
-            <option value="auto">Auto (Recommended)</option>
-            <option value="1280x855">Landscape - 1280x855</option>
-            <option value="1920x1080">Full HD - 1920x1080</option>
-            <option value="1080x1080">Square - 1080x1080</option>
-            <option value="custom">Custom Size</option>
-          </select>
+          <div className="relative">
+            <select
+              value={formData.dimensions}
+              onChange={(e) => updateField('dimensions', e.target.value)}
+              disabled={disabled}
+              className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 bg-white cursor-pointer transition-all appearance-none"
+              style={{ backgroundImage: 'none' }}
+            >
+              {dimensionOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+          </div>
         </div>
 
         {formData.dimensions === 'custom' && (
@@ -297,15 +317,12 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
             <h4 className="font-bold text-gray-900 text-lg">Branding</h4>
           </div>
 
-          <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
-            <BrandingToggle
-              user={user}
-              useBrand={formData.useBrand}
-              onToggle={(value) => updateField('useBrand', value)}
-              disabled={disabled}
-              onSetupBranding={() => setShowAccountPanel(true)}
-            />
-          </div>
+          <BrandingToggle
+            user={user}
+            useBrand={formData.useBrand}
+            setUseBrand={(value) => updateField('useBrand', value)}
+            setShowAccountPanel={setShowAccountPanel}
+          />
         </div>
       )}
 
