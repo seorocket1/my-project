@@ -167,16 +167,27 @@ export default function ModernApp() {
         ? (data.image_url ? 'Featured Image with product image' : 'Featured Image')
         : 'Infographic';
 
+      console.log('🔍 DEBUG - Initial baseImageType:', baseImageType);
+      console.log('🔍 DEBUG - data.use_brand:', data.use_brand);
+      console.log('🔍 DEBUG - data.image_url:', data.image_url);
+      console.log('🔍 DEBUG - user exists:', !!user);
+      console.log('🔍 DEBUG - imageType:', imageType);
+
       // Apply branding if enabled
       if (data.use_brand && user && imageType === 'blog') {
         if (data.image_url) {
           baseImageType = 'Featured Image with product image with branding';
+          console.log('✅ DEBUG - Set to: Featured Image with product image with branding');
         } else {
           baseImageType = 'Featured Image with branding';
+          console.log('✅ DEBUG - Set to: Featured Image with branding');
         }
       } else if (data.use_brand && user && imageType === 'infographic') {
         baseImageType = 'Infographic with branding';
+        console.log('✅ DEBUG - Set to: Infographic with branding');
       }
+
+      console.log('🎯 DEBUG - Final baseImageType:', baseImageType);
 
       const payload: { [key: string]: any } = {
         image_type: baseImageType,
