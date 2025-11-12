@@ -225,10 +225,24 @@ export default function App() {
       if (style) imageDetail += `, Style: ${style}`;
       if (colour) imageDetail += `, Colour: ${colour}`;
 
+      // Determine the base image type
+      let baseImageType = selectedType === 'blog'
+        ? (data.image_url ? 'Featured Image with product image' : 'Featured Image')
+        : 'Infographic';
+
+      // Apply branding if enabled
+      if (data.use_brand && user && selectedType === 'blog') {
+        if (data.image_url) {
+          baseImageType = 'Featured Image with product image with branding';
+        } else {
+          baseImageType = 'Featured Image with branding';
+        }
+      } else if (data.use_brand && user && selectedType === 'infographic') {
+        baseImageType = 'Infographic with branding';
+      }
+
       const payload: { [key: string]: any } = {
-        image_type: selectedType === 'blog'
-          ? (data.image_url ? 'Featured Image with product image' : 'Featured Image')
-          : 'Infographic',
+        image_type: baseImageType,
         image_detail: imageDetail,
       };
 
@@ -241,11 +255,6 @@ export default function App() {
       }
 
       if (data.use_brand && user) {
-        if (payload.image_type.includes('with product image')) {
-          payload.image_type = 'Featured Image with product image with branding';
-        } else {
-          payload.image_type += ' with branding';
-        }
         payload.brand_logo = user.brand_logo_url;
         payload.brand_website = user.website_url;
         payload.brand_guidelines = user.brand_guidelines;
