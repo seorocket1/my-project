@@ -163,33 +163,49 @@ export default function ModernApp() {
       if (colour) imageDetail += `, Colour: ${colour}`;
 
       // Determine the base image type
+      console.log('\n=== IMAGE TYPE DEBUG v3.0 ===');
+      console.log('📊 Raw data received:', data);
+      console.log('📊 data.image_url type:', typeof data.image_url);
+      console.log('📊 data.image_url value:', data.image_url);
+      console.log('📊 data.use_brand type:', typeof data.use_brand);
+      console.log('📊 data.use_brand value:', data.use_brand);
+      console.log('📊 imageType:', imageType);
+      console.log('📊 user:', user);
+
       let baseImageType = imageType === 'blog'
         ? (data.image_url ? 'Featured Image with product image' : 'Featured Image')
         : 'Infographic';
 
-      console.log('\n=== IMAGE TYPE DEBUG v2.1 ===');
       console.log('🔍 Initial baseImageType:', baseImageType);
-      console.log('🔍 data.use_brand:', data.use_brand);
-      console.log('🔍 data.image_url:', data.image_url);
-      console.log('🔍 user exists:', !!user);
-      console.log('🔍 imageType:', imageType);
-      console.log('🔍 Full data:', JSON.stringify(data, null, 2));
+      console.log('🔍 Checking branding conditions...');
+      console.log('  - data.use_brand:', data.use_brand);
+      console.log('  - user:', !!user);
+      console.log('  - imageType === "blog":', imageType === 'blog');
+      console.log('  - Combined (data.use_brand && user && imageType === "blog"):', data.use_brand && user && imageType === 'blog');
 
       // Apply branding if enabled
       if (data.use_brand && user && imageType === 'blog') {
+        console.log('✅ Branding condition MET! Now checking image_url...');
+        console.log('  - data.image_url:', data.image_url);
+        console.log('  - !!data.image_url:', !!data.image_url);
+
         if (data.image_url) {
           baseImageType = 'Featured Image with product image with branding';
-          console.log('✅ DEBUG - Set to: Featured Image with product image with branding');
+          console.log('✅✅ Set to: Featured Image with product image with branding');
         } else {
           baseImageType = 'Featured Image with branding';
-          console.log('✅ DEBUG - Set to: Featured Image with branding');
+          console.log('✅ Set to: Featured Image with branding (NO product image)');
         }
-      } else if (data.use_brand && user && imageType === 'infographic') {
-        baseImageType = 'Infographic with branding';
-        console.log('✅ DEBUG - Set to: Infographic with branding');
+      } else {
+        console.log('❌ Branding condition NOT met');
+        if (data.use_brand && user && imageType === 'infographic') {
+          baseImageType = 'Infographic with branding';
+          console.log('✅ Set to: Infographic with branding');
+        }
       }
 
-      console.log('🎯 Final baseImageType:', baseImageType);
+      console.log('🎯 FINAL baseImageType:', baseImageType);
+      console.log('=================================\n');
 
       const payload: { [key: string]: any } = {
         image_type: baseImageType,
