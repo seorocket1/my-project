@@ -162,71 +162,90 @@ export default function ModernApp() {
       if (style) imageDetail += `, Style: ${style}`;
       if (colour) imageDetail += `, Colour: ${colour}`;
 
-      // Determine the base image type
-      console.log('\n=== IMAGE TYPE DEBUG v3.0 ===');
-      console.log('📊 Raw data received:', data);
-      console.log('📊 data.image_url type:', typeof data.image_url);
-      console.log('📊 data.image_url value:', data.image_url);
-      console.log('📊 data.use_brand type:', typeof data.use_brand);
-      console.log('📊 data.use_brand value:', data.use_brand);
-      console.log('📊 imageType:', imageType);
-      console.log('📊 user:', user);
-
-      let baseImageType = imageType === 'blog'
-        ? (data.image_url ? 'Featured Image with product image' : 'Featured Image')
-        : 'Infographic';
-
-      console.log('🔍 Initial baseImageType:', baseImageType);
-      console.log('🔍 Checking branding conditions...');
+      // COMPLETELY REWRITTEN IMAGE TYPE LOGIC
+      console.log('\n=== IMAGE TYPE LOGIC v4.0 (REWRITTEN) ===');
+      console.log('Input values:');
+      console.log('  - imageType:', imageType);
+      console.log('  - data.image_url:', data.image_url);
       console.log('  - data.use_brand:', data.use_brand);
-      console.log('  - user:', !!user);
-      console.log('  - imageType === "blog":', imageType === 'blog');
-      console.log('  - Combined (data.use_brand && user && imageType === "blog"):', data.use_brand && user && imageType === 'blog');
+      console.log('  - user exists:', !!user);
+      console.log('  - Full data object:', data);
 
-      // Apply branding if enabled
-      if (data.use_brand && user && imageType === 'blog') {
-        console.log('✅ Branding condition MET! Now checking image_url...');
-        console.log('  - data.image_url:', data.image_url);
-        console.log('  - !!data.image_url:', !!data.image_url);
+      let finalImageType: string;
 
-        if (data.image_url) {
-          baseImageType = 'Featured Image with product image with branding';
-          console.log('✅✅ Set to: Featured Image with product image with branding');
+      // BLOG IMAGE TYPES
+      if (imageType === 'blog') {
+        const hasProductImage = !!data.image_url;
+        const hasBranding = data.use_brand === true && !!user;
+
+        console.log('\n📝 BLOG IMAGE - Determining type...');
+        console.log('  hasProductImage:', hasProductImage);
+        console.log('  hasBranding:', hasBranding);
+
+        if (hasBranding && hasProductImage) {
+          finalImageType = 'Featured Image with product image with branding';
+          console.log('  ✅ Result: Featured Image with product image with branding');
+        } else if (hasBranding && !hasProductImage) {
+          finalImageType = 'Featured Image with branding';
+          console.log('  ✅ Result: Featured Image with branding');
+        } else if (!hasBranding && hasProductImage) {
+          finalImageType = 'Featured Image with product image';
+          console.log('  ✅ Result: Featured Image with product image');
         } else {
-          baseImageType = 'Featured Image with branding';
-          console.log('✅ Set to: Featured Image with branding (NO product image)');
-        }
-      } else {
-        console.log('❌ Branding condition NOT met');
-        if (data.use_brand && user && imageType === 'infographic') {
-          baseImageType = 'Infographic with branding';
-          console.log('✅ Set to: Infographic with branding');
+          finalImageType = 'Featured Image';
+          console.log('  ✅ Result: Featured Image');
         }
       }
+      // INFOGRAPHIC IMAGE TYPES
+      else if (imageType === 'infographic') {
+        const hasBranding = data.use_brand === true && !!user;
 
-      console.log('🎯 FINAL baseImageType:', baseImageType);
-      console.log('=================================\n');
+        console.log('\n📊 INFOGRAPHIC - Determining type...');
+        console.log('  hasBranding:', hasBranding);
+
+        if (hasBranding) {
+          finalImageType = 'Infographic with branding';
+          console.log('  ✅ Result: Infographic with branding');
+        } else {
+          finalImageType = 'Infographic';
+          console.log('  ✅ Result: Infographic');
+        }
+      }
+      // FALLBACK
+      else {
+        finalImageType = 'Featured Image';
+        console.log('\n⚠️ UNKNOWN imageType, defaulting to: Featured Image');
+      }
+
+      console.log('\n🎯 FINAL IMAGE TYPE:', finalImageType);
+      console.log('=====================================\n');
 
       const payload: { [key: string]: any } = {
-        image_type: baseImageType,
+        image_type: finalImageType,
         image_detail: imageDetail,
       };
 
-      console.log('📦 Payload being sent:', JSON.stringify(payload, null, 2));
-
       if (data.image_url) {
         payload.image_url = data.image_url;
+        console.log('✅ Added image_url to payload:', data.image_url);
       }
 
       if (data.image_size && data.image_size !== 'auto') {
         payload.image_size = data.image_size;
+        console.log('✅ Added image_size to payload:', data.image_size);
       }
 
       if (data.use_brand && user) {
         payload.brand_logo = user.brand_logo_url;
         payload.brand_website = user.website_url;
         payload.brand_guidelines = user.brand_guidelines;
+        console.log('✅ Added branding data to payload');
       }
+
+      console.log('\n📦 COMPLETE PAYLOAD BEING SENT TO N8N:');
+      console.log(JSON.stringify(payload, null, 2));
+      console.log('Webhook URL:', WEBHOOK_URL);
+      console.log('=====================================\n');
 
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
