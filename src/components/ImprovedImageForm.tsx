@@ -74,6 +74,11 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
     setIsUploading(false);
   };
 
+  const handleImageRemove = () => {
+    console.log('🗑️ Removing image');
+    setFormData(prev => ({ ...prev, imageUrl: '' }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('\n📤 FORM SUBMIT - Current formData:', formData);
@@ -197,10 +202,10 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
               Upload a product image to include in your featured image (+5 credits)
             </p>
             <ImageUpload
-              onImageUpload={handleImageUpload}
+              onUpload={handleImageUpload}
+              onRemove={handleImageRemove}
+              imageUrl={formData.imageUrl}
               isUploading={isUploading}
-              uploadedImageUrl={formData.imageUrl}
-              disabled={disabled || isUploading}
             />
           </div>
         </div>
