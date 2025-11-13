@@ -37,6 +37,15 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
 
   const isBlog = imageType === 'blog';
 
+  // Calculate credits dynamically
+  const calculateCredits = () => {
+    if (!isBlog) return 10; // Infographic always 10
+    return formData.imageUrl ? 10 : 5; // Blog: 5 base + 5 if image
+  };
+
+  console.log('🔄 Component render - formData.imageUrl:', formData.imageUrl);
+  console.log('💰 Calculated credits:', calculateCredits());
+
   const handleImageUpload = async (file: File) => {
     console.log('🖼️ Image upload started:', file.name);
     if (!supabase) {
@@ -367,7 +376,7 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
 
         <div className="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-200">
           <p className="text-sm text-blue-900 font-semibold">
-            Credit Cost: {isBlog ? (formData.imageUrl ? 10 : 5) : 10} credits
+            Credit Cost: {calculateCredits()} credits
             {formData.imageUrl && isBlog && <span className="text-blue-700"> (includes +5 for product image)</span>}
           </p>
         </div>
