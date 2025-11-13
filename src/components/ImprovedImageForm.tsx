@@ -38,7 +38,11 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
   const isBlog = imageType === 'blog';
 
   const handleImageUpload = async (file: File) => {
-    if (!supabase) return;
+    console.log('🖼️ Image upload started:', file.name);
+    if (!supabase) {
+      console.log('❌ Supabase not configured');
+      return;
+    }
     setIsUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { data, error } = await supabase.storage
@@ -49,13 +53,23 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
       const { data: { publicUrl } } = supabase.storage
         .from('temp-images')
         .getPublicUrl(fileName);
-      setFormData({ ...formData, imageUrl: publicUrl });
+      console.log('✅ Image uploaded successfully:', publicUrl);
+      setFormData(prev => {
+        const newData = { ...prev, imageUrl: publicUrl };
+        console.log('✅ Updated formData.imageUrl:', newData.imageUrl);
+        return newData;
+      });
+    } else {
+      console.log('❌ Upload error:', error);
     }
     setIsUploading(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('\n📤 FORM SUBMIT - Current formData:', formData);
+    console.log('📤 formData.imageUrl:', formData.imageUrl);
+
     const submitData: any = {
       content: formData.content,
       style: formData.style,
@@ -70,6 +84,9 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
 
     if (formData.imageUrl) {
       submitData.image_url = formData.imageUrl;
+      console.log('✅ Including image_url in submit:', formData.imageUrl);
+    } else {
+      console.log('❌ NO image_url - formData.imageUrl is empty');
     }
 
     if (formData.dimensions === 'custom' && formData.customWidth && formData.customHeight) {
@@ -78,11 +95,13 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
       submitData.image_size = formData.dimensions;
     }
 
+    console.log('📤 FINAL submitData being sent to parent:', submitData);
+    console.log('=====================================\n');
     onSubmit(submitData);
   };
 
   const updateField = (field: string, value: any) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const colorOptions = [
