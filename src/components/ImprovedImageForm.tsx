@@ -348,8 +348,8 @@ export const ImprovedImageForm: React.FC<ImprovedImageFormProps> = ({
 
         <div className="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-200">
           <p className="text-sm text-blue-900 font-semibold">
-            Credit Cost: {isBlog ? 5 : 10} credits
-            {formData.imageUrl && isBlog && ' + 5 credits for product image'}
+            Credit Cost: {isBlog ? (formData.imageUrl ? 10 : 5) : 10} credits
+            {formData.imageUrl && isBlog && <span className="text-blue-700"> (includes +5 for product image)</span>}
           </p>
         </div>
       </div>

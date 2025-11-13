@@ -135,11 +135,23 @@ export default function ModernApp() {
   };
 
   const handleFormSubmit = async (data: any) => {
+    console.log('\n=== FORM SUBMISSION DEBUG ===');
+    console.log('📝 Submitted data:', data);
+    console.log('📝 data.image_url:', data.image_url);
+    console.log('📝 data.use_brand:', data.use_brand);
+
     const imageType = data.title ? 'blog' : 'infographic';
     let requiredCredits = imageType === 'infographic' ? 10 : 5;
+
+    console.log('💰 Base credits:', requiredCredits);
+
     if (imageType === 'blog' && data.image_url) {
       requiredCredits += 5;
+      console.log('💰 Added +5 for product image. New total:', requiredCredits);
     }
+
+    console.log('💰 Final required credits:', requiredCredits);
+    console.log('================================\n');
 
     if (user && isSupabaseConfigured) {
       if (user.credits < requiredCredits) {
