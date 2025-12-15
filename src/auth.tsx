@@ -22,7 +22,7 @@ const AuthApp: React.FC = () => {
       if (result.user) {
         // Redirect the top-level window to the main app after successful sign-in
         if (window.top) {
-          window.top.location.href = '/';
+          window.top.location.href = '/app.html';
         }
         return { success: true };
       } else {
