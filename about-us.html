@@ -4,28 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us | AI Image Generator</title>
-    <link rel="stylesheet" href="landing.css">
     <link rel="stylesheet" href="legal.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <header>
-        <nav>
-            <div class="logo">
-                <a href="landing.html">ImageGen</a>
+<body class="antialiased bg-white">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex-shrink-0">
+                    <a href="/" class="text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+                        ImageGen AI
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a
+                        href="/index.html"
+                        class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:scale-105"
+                    >
+                        Sign In
+                    </a>
+                </div>
             </div>
-            <ul>
-                <li><a href="landing.html#features">Features</a></li>
-                <li><a href="landing.html#how-it-works">How It Works</a></li>
-                <li><a href="index.html">Get Started</a></li>
-                <li><a href="contact-us.html">Contact</a></li>
-            </ul>
-        </nav>
+        </div>
     </header>
 
-    <main style="padding-top: 100px; min-height: calc(100vh - 200px);">
-        <div class="container">
+    <main style="padding-top: 120px; min-height: calc(100vh - 300px);">
+        <div class="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1>About AI Image Generator</h1>
             <p class="subtitle">Empowering content creators with intelligent visual solutions.</p>
             <div class="text-block">
@@ -40,16 +46,24 @@
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 AI Image Generator. All rights reserved.</p>
-            <ul>
-                <li><a href="privacy-policy.html">Privacy Policy</a></li>
-                <li><a href="terms-and-conditions.html">Terms & Conditions</a></li>
-                <li><a href="refund-policy.html">Refund Policy</a></li>
-                <li><a href="about-us.html">About Us</a></li>
-                <li><a href="contact-us.html">Contact Us</a></li>
-            </ul>
+    <footer class="bg-gray-900 border-t border-gray-800 py-12 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div>
+                <h3 class="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-2">
+                    ImageGen AI
+                </h3>
+                <p class="text-gray-400">Replace designers. Save money. Create faster.</p>
+            </div>
+            <div class="flex space-x-6 mt-8 md:mt-0">
+                <a href="terms-and-conditions.html" class="text-gray-400 hover:text-white transition">Terms</a>
+                <a href="privacy-policy.html" class="text-gray-400 hover:text-white transition">Privacy</a>
+                <a href="refund-policy.html" class="text-gray-400 hover:text-white transition">Refund</a>
+                <a href="about-us.html" class="text-gray-400 hover:text-white transition">About</a>
+                <a href="contact-us.html" class="text-gray-400 hover:text-white transition">Contact</a>
+            </div>
+        </div>
+        <div class="text-center text-gray-500 mt-12 border-t border-gray-800 pt-8">
+            © 2025 ImageGen AI. All Rights Reserved.
         </div>
     </footer>
 </body>
