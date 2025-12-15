@@ -645,13 +645,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSignInClick, onSubsc
             <p className="text-gray-400">Replace designers. Save money. Create faster.</p>
           </div>
           <div className="flex space-x-6 mt-8 md:mt-0">
-            <a href="#" className="text-gray-400 hover:text-white transition">Terms</a>
-            <a href="#" className="text-gray-400 hover:text-white transition">Privacy</a>
-            <a href="#" className="text-gray-400 hover:text-white transition">Contact</a>
+            <a href="/terms-and-conditions.html" className="text-gray-400 hover:text-white transition">Terms</a>
+            <a href="/privacy-policy.html" className="text-gray-400 hover:text-white transition">Privacy</a>
+            <a href="/refund-policy.html" className="text-gray-400 hover:text-white transition">Refund</a>
+            <a href="/about-us.html" className="text-gray-400 hover:text-white transition">About</a>
+            <a href="/contact-us.html" className="text-gray-400 hover:text-white transition">Contact</a>
           </div>
         </div>
         <div className="text-center text-gray-500 mt-12 border-t border-gray-800 pt-8">
-          © 2024 ImageGen AI. All Rights Reserved.
+          © 2025 ImageGen AI. All Rights Reserved.
         </div>
       </footer>
 
