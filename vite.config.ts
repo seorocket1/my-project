@@ -10,6 +10,11 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         app: resolve(__dirname, 'app.html'),
+        'privacy-policy': resolve(__dirname, 'privacy-policy.html'),
+        'terms-and-conditions': resolve(__dirname, 'terms-and-conditions.html'),
+        'refund-policy': resolve(__dirname, 'refund-policy.html'),
+        'about-us': resolve(__dirname, 'about-us.html'),
+        'contact-us': resolve(__dirname, 'contact-us.html'),
       },
     },
   },
